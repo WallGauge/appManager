@@ -1,0 +1,23 @@
+{
+  "name": "app-manager",
+  "version": "0.0.1",
+  "description": "Manages a gauge's config, BLE and irdTxServer communications.",
+  "main": "appManagerClass.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RuckerGauge/appManager.git"
+  },
+  "author": "John Rucker",
+  "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "dependencies": {
+    "ble-peripheral": "git+https://github.com/RuckerGauge/blePeripheral.git",
+    "irdtxclass": "git+https://github.com/RuckerGauge/irdTxClass.git"
+  }
+}
