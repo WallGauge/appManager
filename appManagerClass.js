@@ -20,7 +20,7 @@ class appManager extends EventEmitter{
         if (fs.existsSync(this.defaultConfigFilepath)){
             this.defaultConfigMaster = JSON.parse(fs.readFileSync(this.defaultConfigFilepath))
         } else {
-            console.log('Error Config file located at ' + this.defaultGaugeConfigPath + ', not found!');
+            console.log('Error Config file located at ' + this.defaultConfigFilepath + ', not found!');
             console.log('From:' + __filename);
             throw new Error('Default Config File not found.');
         };
