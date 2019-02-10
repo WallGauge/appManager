@@ -33,10 +33,6 @@ class appManager extends EventEmitter{
         if (fs.existsSync(this.modifiedConfigFilePath)){this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))};
 
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
-
-        console.log('this.config follows:');
-        console.dir(this.config, {depth:null});
-
         this.status = 'ipl, ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
         this.value = 'Not Set Yet';
         this._okToSend = true;
