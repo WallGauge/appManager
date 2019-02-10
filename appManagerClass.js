@@ -5,14 +5,18 @@ const BLEperipheral =       require("ble-peripheral");
 var self;
 
 /**
- * This class provides an interface to the gauge’s factory default configuration settings in gaugeConfig.json as well as the dynamically created modifiedConfig.json file.  
- * The modifiedConfig.json will be created when a user configures their gauge.  Not all gauges will need a modifiedConfig.json file.   
- * Additionally, this class forwards gauge values to the irdTxService when a user calls the setGaugeValue(value) method.  
- * This method in turn uses the irdTxClass to communicate with the irdTxService and the ble-peripheral class to make the gauge value available to an administration device over BLE.  
- * See Readme.md for more usage information.
+ * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
+ * This class also provides a frontend to the irdTxClass and  blePeripheral class in the setGaugeStatus and setGaugeValue methods.
+ * 
+ * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
+ * 
+ * typical setup call ->const myAppMan = new AppMan(__dirname + '/gaugeConfig.json', __dirname + '/modifiedConfig.json');<-
+ * 
+ * @param {string} defaultGaugeConfigPath gaugeConfig.json location. Example: (__dirname + '/gaugeConfig.json'). This file must exist see ./samples/sample_gaugeConfig.json for an example format
+ * @param {string} modifiedConfigMasterPath modifiedConfig.json location. Example: (__dirname + '/modifiedConfig.json'). This file will be created on first write if it doesn't exist. 
  */
 class appManager extends EventEmitter{
-    constructor(defaultGaugeConfigPath = '../../gaugeConfig.json', modifiedConfigMasterPath = '../../modifiedConfig.json'){
+    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = ''){
         super();
         
         this.defaultConfigFilepath = defaultGaugeConfigPath;
@@ -62,11 +66,10 @@ class appManager extends EventEmitter{
         });
     };
 
-    _bleConfig(DBus){
-        self._bleMasterConfig();
-        self.bleMyConfig();
-    }
-
+    /** Transmits gauge vlaue to irTxServer, also sets BLE gauge vlaue and fires BLE notify
+     * 
+     * @param {*} value is the gauge vlue
+     */
     setGaugeValue(value){
         if(this._okToSend){
             this.gTx.sendValue(value);
@@ -84,6 +87,10 @@ class appManager extends EventEmitter{
         return true;
     };
 
+    /** Sets BLE gaugeStatus and fires BLE notify
+     * 
+     * @param {string} statusStr status string to set. Suggest including a time stamp in the string for exampel 'Okay, 8:14:25AM, 2/10/2019'
+     */
     setGaugeStatus(statusStr){
         this.status = statusStr;
         this.gaugeStatus.setValue(statusStr);
@@ -93,8 +100,46 @@ class appManager extends EventEmitter{
         };
     };    
 
+    /** This is a blank method that can be extended. 
+     * This method will be called after _bleMasterConfig() allowing custom characteristics to be added.
+     */
     bleMyConfig(){
         console.log('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
+    }
+
+    /** Saves custom config items to the config file located in modifiedConfigMasterPath 
+     * Item to be saved should be in key:value format.  For example to seave the IP address of a device call this method with
+     * saveItem({webBoxIP:'10.10.10.12});
+     * @param {Object} itemsToSaveAsObject 
+     */
+    saveItem(itemsToSaveAsObject){
+        console.log('saveItem called with:');
+        console.log(itemsToSaveAsObject);
+    
+        var itemList = Object.keys(itemsToSaveAsObject);
+        itemList.forEach((keyName)=>{
+            this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
+        })
+        console.log('Writting file to ' + this.modifiedConfigFilePath);
+        fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
+        this._reloadConfig();
+    };
+
+    _reloadConfig(){
+        console.log('config reloading...');
+        this.modifiedConfigMaster = {};
+        if (fs.existsSync(this.modifiedConfigFilePath)){
+            this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
+        };
+        this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
+        this.gaugeConfig.setValue(JSON.stringify(this.config));
+        console.log('firing "Update" event...');
+        this.emit('Update');
+    };
+
+    _bleConfig(DBus){
+        self._bleMasterConfig();
+        self.bleMyConfig();
     }
 
     _bleMasterConfig(){
@@ -158,7 +203,7 @@ class appManager extends EventEmitter{
                         console.log('Removing custom configuration file' + this.modifiedConfigFilePath);
                         this.setGaugeStatus('Removing custom configuration file and resetting gauge to default config. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                         fs.unlinkSync(this.modifiedConfigFilePath);
-                        this.reloadConfig();
+                        this._reloadConfig();
                     } else {
                         console.log('Warning: Custom configuration file not found.');
                         cmdResult='Warning: Custom configuration file not found.'
@@ -184,30 +229,6 @@ class appManager extends EventEmitter{
         this.gaugeConfig.setValue(JSON.stringify(this.config));
     };
 
-    saveItem(itemsToSaveAsObject){
-        console.log('saveItem called with:');
-        console.log(itemsToSaveAsObject);
-    
-        var itemList = Object.keys(itemsToSaveAsObject);
-        itemList.forEach((keyName)=>{
-            this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
-        })
-        console.log('Writting file to ' + this.modifiedConfigFilePath);
-        fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
-        this.reloadConfig();
-    };
-
-    reloadConfig(){
-        console.log('config reloading...');
-        this.modifiedConfigMaster = {};
-        if (fs.existsSync(this.modifiedConfigFilePath)){
-            this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
-        };
-        this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
-        this.gaugeConfig.setValue(JSON.stringify(this.config));
-        console.log('firing "Update" event...');
-        this.emit('Update');
-    };
 };
 
 module.exports = appManager;

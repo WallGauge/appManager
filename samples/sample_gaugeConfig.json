@@ -1,0 +1,8 @@
+{
+    "descripition":"Sunnyboy WebBox",
+    "uuid":"a67a125c-2eba-4b76-9b9b-7f6e80a69e68",
+    "dBusName":"com.sbPowerGauge",
+    "calibrationTable": [[0,14],[1000,95],[2000,175],[3000,255],[4000,335],[5000,415],[6000,495],[7000,575],[7250,614]],
+    "gaugeIrAddress":"26",
+    "webBoxIP":"10.0.0.2"
+}
