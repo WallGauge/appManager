@@ -17,13 +17,22 @@ class appManager extends EventEmitter{
         
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
-        if (fs.existsSync(this.defaultConfigFilepath)){this.defaultConfigMaster = JSON.parse(fs.readFileSync(this.defaultConfigFilepath))};           
-
+        if (fs.existsSync(this.defaultConfigFilepath)){
+            this.defaultConfigMaster = JSON.parse(fs.readFileSync(this.defaultConfigFilepath))
+        } else {
+            console.log('Error Config file located at ' + this.defaultGaugeConfigPath + ', not found!');
+            console.log('From:' + __filename);
+            throw new Error('Default Config File not found.');
+        };
         this.modifiedConfigFilePath = modifiedConfigMasterPath;
         this.modifiedConfigMaster = {};
         if (fs.existsSync(this.modifiedConfigFilePath)){this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))};
 
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
+
+        console.log('this.config follows:');
+        console.dir(this.config, {depth:null});
+
         this.status = 'ipl, ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
         this.value = 'Not Set Yet';
         this._okToSend = true;
