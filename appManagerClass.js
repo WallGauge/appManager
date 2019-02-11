@@ -99,7 +99,7 @@ class appManager extends EventEmitter{
     
     sendAlert(objectToSend = {[this.config.descripition]:"1"}){
         console.log('Sending Alert....')
-        console.dir(obobjectToSend,{depth:null});
+        console.dir(objectToSend,{depth:null});
         try{
         //var objAsStr = JSON.stringify(objectToSend);
         //var asArry = objAsStr.split('');
