@@ -98,20 +98,25 @@ class appManager extends EventEmitter{
     };  
     
     sendAlert(objectToSend = {[this.config.descripition]:"1"}){
-        var objAsStr = JSON.stringify(objectToSend);
-        console.log('sendAlert called with ' + objAsStr);
-   
-        var asArry = objAsStr.split('')
+        console.log('Sending Alert....')
+        console.dir(obobjectToSend,{depth:null});
+        try{
+        //var objAsStr = JSON.stringify(objectToSend);
+        //var asArry = objAsStr.split('');
+        var asArry = JSON.stringify(objectToSend).split('');
         var nums = '[';
         asArry.forEach((val, indx)=>{
             nums += '0x' + val.charCodeAt().toString(16);
             if(indx + 1 != asArry.length){nums += ','};
         })
         nums += ']';
-        console.log('As hex bytes ->' + nums);
+        console.log('Alert as hex bytes ->' + nums);
         console.log('Calling gdbus to send alert to rgMan...');
         var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
         console.log('result = ' + result);
+        } catch(err){
+            console.log('Error when trying to sendAlert to rgMan ' + err);
+        };
     };
 
     /** This is a blank method that can be extended. 
@@ -225,14 +230,13 @@ class appManager extends EventEmitter{
                 break;
 
                 case 23:    //0x17
-                    console.log('Send Test gaugeAlert');
-                    var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue [0x74,0x74,0x74,0x74]")
-                    console.log('Call Results = ' + result);
+                    console.log('Test: Flag Alert to rgMan');
+                    this.sendAlert({[this.config.descripition]:"1"});
                 break;
 
                 case 24:    //0x18
-                    console.log('test: calling this.sendAlert()');
-                    this.sendAlert();
+                    console.log('test: Clear Alert to rgMan');
+                    this.sendAlert({[this.config.descripition]:"0"});
                 break;
             
                 default:
