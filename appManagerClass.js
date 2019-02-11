@@ -100,21 +100,26 @@ class appManager extends EventEmitter{
     sendAlert(objectToSend = {[this.config.descripition]:"1"}){
         var objAsStr = JSON.stringify(objectToSend);
         console.log('sendAlert called with ' + objAsStr);
-        var bufToSend = Buffer.from(objAsStr.toString());
-
-        console.log('>>>>>>> [' + bufToSend.toString('hex') + ']');
-
+   
+        var asArry = objAsStr.split('')
+        var nums = '[';
+        asArry.forEach((val, indx)=>{
+            nums += '0x' + val.charCodeAt().toString(16);
+            if(indx + 1 != asArry.length){nums += ','};
+        })
+        nums += ']';
+        console.log('As hex bytes ->' + nums);
         console.log('Calling gdbus to send alert to rgMan...');
-        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue [" + bufToSend.toString('hex') + ']');
+        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
         console.log('result = ' + result);
-    }
+    };
 
     /** This is a blank method that can be extended. 
      * This method will be called after _bleMasterConfig() allowing custom characteristics to be added.
      */
     bleMyConfig(){
         console.log('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
-    }
+    };
 
     /** Saves custom config items to the config file located in modifiedConfigMasterPath 
      * Item to be saved should be in key:value format.  For example to seave the IP address of a device call this method with
