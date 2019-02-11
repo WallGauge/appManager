@@ -95,7 +95,15 @@ class appManager extends EventEmitter{
         if(this.gaugeStatus.iface.Notifying && this.bPrl.client.connected){
             this.gaugeStatus.notify();
         };
-    };    
+    };  
+    
+    sendAlert(objectToSend = {[this.config.descripition]:{alert:1}}){
+        var objAsStr = JSON.stringify(objectToSend);
+        console.log('sendAlert called with ' + objAsStr);
+        var bufToSend = Buffer.from(objAsStr);
+        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + bufToSend);
+        console.log('result = ' + result);
+    }
 
     /** This is a blank method that can be extended. 
      * This method will be called after _bleMasterConfig() allowing custom characteristics to be added.
@@ -211,8 +219,11 @@ class appManager extends EventEmitter{
                     console.log('Send Test gaugeAlert');
                     var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue [0x74,0x74,0x74,0x74]")
                     console.log('Call Results = ' + result);
+                break;
 
-
+                case 24:    //0x18
+                    console.log('test: calling this.sendAlert()');
+                    this.sendAlert();
                 break;
             
                 default:
