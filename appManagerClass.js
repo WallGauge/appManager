@@ -101,8 +101,11 @@ class appManager extends EventEmitter{
         var objAsStr = JSON.stringify(objectToSend);
         console.log('sendAlert called with ' + objAsStr);
         var bufToSend = Buffer.from(objAsStr.toString());
+
+        console.log('>>>>>>> [' + bufToSend.toString('hex') + ']');
+
         console.log('Calling gdbus to send alert to rgMan...');
-        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + bufToSend);
+        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue [" + bufToSend.toString('hex') + ']');
         console.log('result = ' + result);
     }
 
