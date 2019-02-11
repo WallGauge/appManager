@@ -1,7 +1,8 @@
-const fs =                  require("fs");
-const EventEmitter =        require('events');
-const irTransmitter =       require('irdtxclass');
-const BLEperipheral =       require("ble-peripheral");
+const fs =              require("fs");
+const cp =              require('child_process');
+const EventEmitter =    require('events');
+const irTransmitter =   require('irdtxclass');
+const BLEperipheral =   require("ble-peripheral");
 var self;
 
 /**
@@ -204,6 +205,14 @@ class appManager extends EventEmitter{
                         console.log('Warning: Custom configuration file not found.');
                         cmdResult='Warning: Custom configuration file not found.'
                     };                   
+                break;
+
+                case 23:    //0x17
+                    console.log('Send Test gaugeAlert');
+                    var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue [0x74,0x74,0x74,0x74]")
+                    console.log('Call Results = ' + result);
+
+
                 break;
             
                 default:
