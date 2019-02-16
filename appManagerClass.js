@@ -110,7 +110,6 @@ class appManager extends EventEmitter{
             if(indx + 1 != asArry.length){nums += ','};
         })
         nums += ']';
-        console.log('Alert as hex bytes ->' + nums);
         console.log('Calling gdbus to send alert to rgMan...');
         var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
         console.log('result = ' + result);
