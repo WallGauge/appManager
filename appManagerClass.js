@@ -161,7 +161,7 @@ class appManager extends EventEmitter{
     }
 
     _bleMasterConfig(){
-        this.bPrl.logCharacteristicsIO = true;
+        //this.bPrl.logCharacteristicsIO = true;
         //this.bPrl.logAllDBusMessages = true;
         console.log('Initialize charcteristics...')
         this.appVer =       this.bPrl.Characteristic('001d6a44-2551-4342-83c9-c18a16a3afa5', 'appVer', ["encrypt-read"]);
