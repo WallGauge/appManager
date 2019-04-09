@@ -238,9 +238,9 @@ class appManager extends EventEmitter{
 
                 case "10":
                     console.log("Send the value zero to gauge and enabling normal gauge TX.")
-                    this.setGaugeValue(0)
                     this_okToSend = true;
-
+                    this.setGaugeValue(0)
+                    
                 case "20":   
                     console.log('Test: Flag Alert to rgMan');
                     this.sendAlert({[this.config.descripition]:"1"});
