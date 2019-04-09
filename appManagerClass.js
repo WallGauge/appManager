@@ -237,8 +237,9 @@ class appManager extends EventEmitter{
                 break;
 
                 case "10":
+                    console.log('Enable normal gauge value TX.')
+                    this._okToSend = true;
                     console.log("Send the value zero to gauge and enabling normal gauge TX.")
-                    this_okToSend = true;
                     this.setGaugeValue(0)
                     
                 case "20":   
