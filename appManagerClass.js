@@ -180,23 +180,31 @@ class appManager extends EventEmitter{
             switch (cmdNum) {
                 case '0':   
                     console.log('Sending test battery to gauge...');
+                    console.log('Disabling sending of gauge value during adminstration.');
+                    this._okToSend = false;
                     this.setGaugeStatus('Sending test battery command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Check_Battery_Voltage));
                 break;
         
                 case '1':  
+                    console.log('Disabling sending of gauge value during adminstration.');
+                    this._okToSend = false;
                     console.log('Sending gauge reset request ');
                     this.setGaugeStatus('Sending reset command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Reset));
                 break;
     
-                case '2':    
+                case '2':  
+                    console.log('Disabling sending of gauge value during adminstration.');
+                    this._okToSend = false;  
                     console.log('Sending gauge Zero Needle request ');
                     this.setGaugeStatus('Sending zero needle command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Zero_Needle));
                 break;          
         
                 case '3':  
+                    console.log('Disabling sending of gauge value during adminstration.');
+                    this._okToSend = false;
                     console.log('Sending Identifify gauge request')
                     this.setGaugeStatus('Sending identifify command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Identifify));
@@ -229,8 +237,9 @@ class appManager extends EventEmitter{
                 break;
 
                 case "10":
-                    console.log("Send the value zero to gauge now.")
+                    console.log("Send the value zero to gauge and enabling normal gauge TX.")
                     this.setGaugeValue(0)
+                    this_okToSend = true;
 
                 case "20":   
                     console.log('Test: Flag Alert to rgMan');
