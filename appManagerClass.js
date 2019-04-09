@@ -177,7 +177,7 @@ class appManager extends EventEmitter{
             var cmdResult = 'okay';
             console.log(device + ' has sent a new gauge command: number = ' + cmdNum);
     
-            switch (cmdNudm) {
+            switch (cmdNum) {
                 case '0':   
                     console.log('Sending test battery to gauge...');
                     this.setGaugeStatus('Sending test battery command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
