@@ -177,7 +177,7 @@ class appManager extends EventEmitter{
             var cmdResult = 'okay';
             console.log(device + ' has sent a new gauge command: number = ' + cmdNum);
     
-            switch (cmdNum) {
+            switch (cmdNudm) {
                 case '0':   
                     console.log('Sending test battery to gauge...');
                     this.setGaugeStatus('Sending test battery command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
@@ -227,6 +227,10 @@ class appManager extends EventEmitter{
                         cmdResult='Warning: Custom configuration file not found.'
                     };                   
                 break;
+
+                case "10":
+                    console.log("Send the value zero to gauge now.")
+                    this.setGaugeValue(0)
 
                 case "20":   
                     console.log('Test: Flag Alert to rgMan');
