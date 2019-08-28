@@ -66,8 +66,9 @@ class appManager extends EventEmitter{
     /** Transmits gauge vlaue to irTxServer, also sets BLE gauge vlaue and fires BLE notify
      * 
      * @param {*} value is the gauge vlue
+     * @param {string} descripition is an optional description of value
      */
-    setGaugeValue(value){
+    setGaugeValue(value, descripition = ''){
         if(this._okToSend){
             this.gTx.sendValue(value);
         } else {
@@ -75,6 +76,10 @@ class appManager extends EventEmitter{
             return false;
         };
         var logValue = value.toString() + ', ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
+        if(descripition != ''){
+            logValue = vlaue.toString() + descripition.toString();
+        };
+        
         this.value = logValue;
         this.gaugeValue.setValue(logValue);
 
