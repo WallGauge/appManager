@@ -77,7 +77,7 @@ class appManager extends EventEmitter{
         };
         var logValue = value.toString() + ', ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
         if(descripition != ''){
-            logValue = vlaue.toString() + descripition.toString();
+            logValue = value.toString() + descripition.toString();
         };
         
         this.value = logValue;
