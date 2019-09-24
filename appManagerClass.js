@@ -3,7 +3,11 @@ const cp =              require('child_process');
 const EventEmitter =    require('events');
 const irTransmitter =   require('irdtxclass');
 const BLEperipheral =   require("ble-peripheral");
+const Crypto =          require("cipher").encryption;
+
 var self;
+var crypto = {};
+var encrytionKey = null
 
 /**
  * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
@@ -116,7 +120,8 @@ class appManager extends EventEmitter{
         })
         nums += ']';
         console.log('Calling gdbus to send alert to rgMan...');
-        var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
+        //var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
+        var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + nums);
         console.log('result = ' + result);
         } catch(err){
             console.log('Error when trying to sendAlert to rgMan ' + err);
@@ -276,7 +281,20 @@ class appManager extends EventEmitter{
         this.gaugeStatus.setValue(this.status)
         this.gaugeConfig.setValue(JSON.stringify(this.config));
     };
+};
 
+function getDataEncryptionKey(){
+    console.log('appManagerClass is asking rgMan for data encryption key status.')
+    var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherMKID org.bluez.GattCharacteristic1.ReadValue");
+    
+    if(result == 'Key is available'){
+        console.log('appManagerClass is reading encrytion key from rgMan');
+        encrytionKey = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherMKID org.bluez.GattCharacteristic1.ReadValue");
+        return true;
+    } else {
+        console.log('Encrytion key not available, status = ' + result);
+    };
+    return false;
 };
 
 module.exports = appManager;
