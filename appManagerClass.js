@@ -7,7 +7,7 @@ const Crypto =          require("cipher").encryption;
 
 var self;
 var crypto = {};
-var encrytionKey = null
+var encryptionKey = null
 
 /**
  * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
@@ -26,7 +26,7 @@ class appManager extends EventEmitter{
         this.encryptionAvailable = getDataEncryptionKey();
         if(this.encryptionAvailable){
             console.log('appManagerClass has an data encryption key. Setting up encryption...');
-            crypto = new Crypto(encrytionKey);
+            crypto = new Crypto(encryptionKey);
         };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
@@ -287,14 +287,19 @@ class appManager extends EventEmitter{
     };
 };
 
+/**
+ * Makes a process call to rgMan and reads the encryption key.  Uses the dbus=send command to read values.
+ * 
+ * Returns ture if encryption key is avaible and sets the encryptionKey buffer.
+ */
 function getDataEncryptionKey(){
     console.log('appManagerClass is asking rgMan for data encryption key status.')
     var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
-    if(result == 'array of bytes "Key is available"'){
+    if(parseText(result) == 'Key is available'){
         console.log('appManagerClass is reading encrytion key from rgMan');
         var keyText = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
         console.log('key = ' + keyText);
-        encrytionKey = parseKey(keyText);
+        encryptionKey = parseKey(keyText);
         return true;
     } else {
         console.log('Encrytion key not available, status = ' + result);
@@ -303,9 +308,7 @@ function getDataEncryptionKey(){
 };
 
 /**
- * Parse the key from an arry of bytes that is returned from a dbus-send command.
- * 
- * Returns a buffer
+ * Returns a buffer that repersents an array of bytes returned from a dbus-send command.
  * 
  * @param {*} keyAsString keyAsString -->array of bytes [6b 4e 4c bb a3 3a 01 77 a1 8d 47 2c 88 c9 65 22 db 01 fe c5 90 7b 7b fc a5 c7 7c 52 0e f8 63 0f ]<--
  */
@@ -318,6 +321,16 @@ function parseKey(keyAsString){
         valueAsArry[indx] = '0x'+item
     });
     return Buffer.from(valueAsArry, 'hex');
+};
+
+/**
+ * Returns a string that repersents a string value returned from a dbus-send command.
+ * 
+ * @param {*} valueAsString = ->    array of bytes "Key is available"<-
+ */
+function parseText(valueAsString){
+    var x = valueAsString.split('"');
+    return x[1];
 };
 
 module.exports = appManager;
