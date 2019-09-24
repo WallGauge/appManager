@@ -294,12 +294,13 @@ class appManager extends EventEmitter{
  */
 function getDataEncryptionKey(){
     console.log('appManagerClass is asking rgMan for data encryption key status.')
-    var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
-    if(parseText(result) == 'Key is available'){
+    var raw = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
+    var result = parseText(raw.toString())
+    if(result == 'Key is available'){
         console.log('appManagerClass is reading encrytion key from rgMan');
         var keyText = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
         console.log('key = ' + keyText);
-        encryptionKey = parseKey(keyText);
+        encryptionKey = parseKey(keyText.toString());
         return true;
     } else {
         console.log('Encrytion key not available, status = ' + result);
