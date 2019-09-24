@@ -25,8 +25,9 @@ class appManager extends EventEmitter{
         super();
         this.encryptionAvailable = getDataEncryptionKey();
         if(this.encryptionAvailable){
-            console.log('appManagerClass has an data encryption key. Setting up encryption...');
+            console.log('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
+            console.log('The crypto class key = ' + crypto.key);
         };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
@@ -299,7 +300,6 @@ function getDataEncryptionKey(){
     if(result == 'Key is available'){
         console.log('appManagerClass is reading encrytion key from rgMan');
         var keyText = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
-        console.log('key = ' + keyText);
         encryptionKey = parseKey(keyText.toString());
         return true;
     } else {
