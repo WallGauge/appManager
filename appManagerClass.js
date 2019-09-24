@@ -158,6 +158,32 @@ class appManager extends EventEmitter{
         this._reloadConfig();
     };
 
+    /** Returns a buffer repersenting the encrypted vale of textToEncrypt
+     * 
+     * @param {String} textToEncrypt 
+     */
+    encrypt(textToEncrypt){
+        if(this.encryptionAvailable){
+            return crypto.encrypt(textToEncrypt)
+        } else {
+            console.log('ERROR Call to appManagerClass encrypt method but encryption is not available.')
+            throw Error ('Call to appManagerClass encrypt method but encryption is not available.');
+        };
+    };
+
+    /** Returns the unencrypted value of encryptedData buffer.
+     * 
+     * @param {Buffer} encryptedData 
+     */
+    decrypt(encryptedData){
+        if(this.encryptionAvailable){
+            return crypto.decrypt(encryptedData)
+        } else {
+            console.log('ERROR Call to appManagerClass decrypt method but encryption is not available.')
+            throw Error ('Call to appManagerClass decrypt method but encryption is not available.');
+        };
+    };
+
     _reloadConfig(){
         console.log('config reloading...');
         this.modifiedConfigMaster = {};
