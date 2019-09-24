@@ -290,6 +290,7 @@ function getDataEncryptionKey(){
     if(result == 'Key is available'){
         console.log('appManagerClass is reading encrytion key from rgMan');
         encrytionKey = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
+        console.log('key = ' + encrytionKey);
         return true;
     } else {
         console.log('Encrytion key not available, status = ' + result);
