@@ -285,8 +285,9 @@ class appManager extends EventEmitter{
 
 function getDataEncryptionKey(){
     console.log('appManagerClass is asking rgMan for data encryption key status.')
-    var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
-    
+    var x = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
+    var result = x.toString()
+
     if(result == 'Key is available'){
         console.log('appManagerClass is reading encrytion key from rgMan');
         encrytionKey = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
