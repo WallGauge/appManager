@@ -23,7 +23,11 @@ var encrytionKey = null
 class appManager extends EventEmitter{
     constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = ''){
         super();
-        getDataEncryptionKey();
+        this.encryptionAvailable = getDataEncryptionKey();
+        if(this.encryptionAvailable){
+            console.log('appManagerClass has an data encryption key. Setting up encryption...');
+            crypto = new Crypto(encrytionKey);
+        };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
         if (fs.existsSync(this.defaultConfigFilepath)){
@@ -285,18 +289,35 @@ class appManager extends EventEmitter{
 
 function getDataEncryptionKey(){
     console.log('appManagerClass is asking rgMan for data encryption key status.')
-    var x = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
-    var result = x.toString()
-
-    if(result == 'Key is available'){
+    var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
+    if(result == 'array of bytes "Key is available"'){
         console.log('appManagerClass is reading encrytion key from rgMan');
-        encrytionKey = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
-        console.log('key = ' + encrytionKey);
+        var keyText = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
+        console.log('key = ' + keyText);
+        encrytionKey = parseKey(keyText);
         return true;
     } else {
         console.log('Encrytion key not available, status = ' + result);
     };
     return false;
+};
+
+/**
+ * Parse the key from an arry of bytes that is returned from a dbus-send command.
+ * 
+ * Returns a buffer
+ * 
+ * @param {*} keyAsString keyAsString -->array of bytes [6b 4e 4c bb a3 3a 01 77 a1 8d 47 2c 88 c9 65 22 db 01 fe c5 90 7b 7b fc a5 c7 7c 52 0e f8 63 0f ]<--
+ */
+function parseKey(keyAsString){
+    var x = keyAsString.split('[');
+    x = x[1].split(']');
+    x[0] = x[0].trim();
+    var valueAsArry = x[0].split(' ');
+    valueAsArry.forEach((item, indx) => {
+        valueAsArry[indx] = '0x'+item
+    });
+    return Buffer.from(valueAsArry, 'hex');
 };
 
 module.exports = appManager;
