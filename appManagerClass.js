@@ -23,7 +23,7 @@ var encrytionKey = null
 class appManager extends EventEmitter{
     constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = ''){
         super();
-        
+        getDataEncryptionKey();
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
         if (fs.existsSync(this.defaultConfigFilepath)){
