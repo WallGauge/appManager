@@ -12,6 +12,8 @@ var encryptionKey = null
 /**
  * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
  * This class also provides a frontend to the irdTxClass and  blePeripheral class in the setGaugeStatus and setGaugeValue methods.
+ * Version 1.4.x supports encryption of the modifiedConfigMaster file.  This will encrypte the file contents based on an encrytion key from rgMan. 
+ * To require encryption set encryptMyDataOnDisk = true.  If this is true and the encryption key is not available this class will throw.
  * 
  * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
  * 
@@ -19,10 +21,12 @@ var encryptionKey = null
  * 
  * @param {string} defaultGaugeConfigPath gaugeConfig.json location. Example: (__dirname + '/gaugeConfig.json'). This file must exist see ./samples/sample_gaugeConfig.json for an example format
  * @param {string} modifiedConfigMasterPath modifiedConfig.json location. Example: (__dirname + '/modifiedConfig.json'). This file will be created on first write if it doesn't exist. 
+ * @param {bool} encryptMyDataOnDisk defaults to false.  Set to true if you want to encrypte the contents of modifiedConfigMasterPath file.  
  */
 class appManager extends EventEmitter{
-    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = ''){
+    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = '', encryptMyDataOnDisk = false){
         super();
+        this.encryptMyData = encryptMyDataOnDisk;
         this.encryptionAvailable = getDataEncryptionKey();
         if(this.encryptionAvailable){
             console.log('appManagerClass has a data encryption key. Setting up encryption...');
@@ -40,7 +44,13 @@ class appManager extends EventEmitter{
         };
         this.modifiedConfigFilePath = modifiedConfigMasterPath;
         this.modifiedConfigMaster = {};
-        if (fs.existsSync(this.modifiedConfigFilePath)){this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))};
+        if (fs.existsSync(this.modifiedConfigFilePath)){
+            if(this.encryptMyData){
+                this.modifiedConfigMaster = this._readEncryptedJsonFile(this.modifiedConfigFilePath);
+            }  else {
+                this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
+            };
+        };
 
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
         this.status = 'ipl, ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
@@ -154,41 +164,23 @@ class appManager extends EventEmitter{
             this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
         })
         console.log('Writting file to ' + this.modifiedConfigFilePath);
-        fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
+        if(this.encryptMyData){
+            this._writeJsonToEncryptedFile(this.modifiedConfigFilePath, this.modifiedConfigMaster)
+        } else {
+            fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
+        };
         this._reloadConfig();
-    };
-
-    /** Returns a buffer repersenting the encrypted vale of textToEncrypt
-     * 
-     * @param {String} textToEncrypt 
-     */
-    encrypt(textToEncrypt){
-        if(this.encryptionAvailable){
-            return crypto.encrypt(textToEncrypt)
-        } else {
-            console.log('ERROR Call to appManagerClass encrypt method but encryption is not available.')
-            throw Error ('Call to appManagerClass encrypt method but encryption is not available.');
-        };
-    };
-
-    /** Returns the unencrypted value of encryptedData buffer.
-     * 
-     * @param {Buffer} encryptedData 
-     */
-    decrypt(encryptedData){
-        if(this.encryptionAvailable){
-            return crypto.decrypt(encryptedData)
-        } else {
-            console.log('ERROR Call to appManagerClass decrypt method but encryption is not available.')
-            throw Error ('Call to appManagerClass decrypt method but encryption is not available.');
-        };
     };
 
     _reloadConfig(){
         console.log('config reloading...');
         this.modifiedConfigMaster = {};
         if (fs.existsSync(this.modifiedConfigFilePath)){
-            this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
+            if(this.encryptMyData){
+                this.modifiedConfigMaster = this._readEncryptedJsonFile(this.modifiedConfigFilePath);
+            }  else {
+                this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
+            };
         };
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
         this.gaugeConfig.setValue(JSON.stringify(this.config));
@@ -196,10 +188,33 @@ class appManager extends EventEmitter{
         this.emit('Update');
     };
 
+    _readEncryptedJsonFile(jsonFilePath){
+        console.log('appManagerClass is reading and decrypting ' + jsonFilePath);
+        if(this.encryptionAvailable){
+            var encryptedFileContents = fs.readFileSync(jsonFilePath, 'utf8');
+            var decryptedFileContents = crypto.decrypt(encryptedFileContents);
+            return JSON.parse(decryptedFileContents);
+        } else {
+            console.log('ERROR Call to appManagerClass readEncryptedJsonFile method but encryption is not available.')
+            throw Error ('Call to appManagerClass readEncryptedJsonFile method but encryption is not available.');
+        };
+    };
+    
+    _writeJsonToEncryptedFile(filePath, jsonObj){
+        console.log('appManagerClass is encrypting and saving JSON Object to ' + filePath);
+        if(this.encryptionAvailable){
+            var encryptedFileBuffer = crypto.encrypt(JSON.stringify(jsonObj));
+            fs.writeFileSync(filePath, encryptedFileBuffer);
+        } else {
+            console.log('ERROR Call to appManagerClass writeJsonToEncryptedFile method but encryption is not available.')
+            throw Error ('Call to appManagerClass writeJsonToEncryptedFile method but encryption is not available.');
+        };
+    };
+
     _bleConfig(DBus){
         self._bleMasterConfig();
         self.bleMyConfig();
-    }
+    };
 
     _bleMasterConfig(){
         //this.bPrl.logCharacteristicsIO = true;
@@ -359,5 +374,7 @@ function parseText(valueAsString){
     var x = valueAsString.split('"');
     return x[1];
 };
+
+
 
 module.exports = appManager;
