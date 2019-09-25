@@ -31,7 +31,6 @@ class appManager extends EventEmitter{
         if(this.encryptionAvailable){
             console.log('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
-            console.log('The crypto class key = ' + crypto.key);
         };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
         this.defaultConfigMaster = {};      
@@ -157,16 +156,16 @@ class appManager extends EventEmitter{
      */
     saveItem(itemsToSaveAsObject){
         console.log('saveItem called with:');
-        console.log(itemsToSaveAsObject);
+        if(!this.encryptMyData)console.log(itemsToSaveAsObject);
     
         var itemList = Object.keys(itemsToSaveAsObject);
         itemList.forEach((keyName)=>{
             this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
-        })
-        console.log('Writting file to ' + this.modifiedConfigFilePath);
+        });
         if(this.encryptMyData){
             this._writeJsonToEncryptedFile(this.modifiedConfigFilePath, this.modifiedConfigMaster)
         } else {
+            console.log('Writting file (not using encryption) to ' + this.modifiedConfigFilePath);
             fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
         };
         this._reloadConfig();
