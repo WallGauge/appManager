@@ -27,7 +27,8 @@ class appManager extends EventEmitter{
     constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = '', encryptMyDataOnDisk = false){
         super();
         this.encryptMyData = encryptMyDataOnDisk;
-        this.encryptionAvailable = getDataEncryptionKey();
+        this.encryptionAvailable = false;
+        if(this.encryptMyData){this.encryptionAvailable = getDataEncryptionKey()};
         if(this.encryptionAvailable){
             console.log('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
