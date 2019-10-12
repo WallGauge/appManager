@@ -12,7 +12,7 @@ var encryptionKey = null
 /**
  * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
  * This class also provides a frontend to the irdTxClass and  blePeripheral class in the setGaugeStatus and setGaugeValue methods.
- * Version 1.4.x supports encryption of the modifiedConfigMaster file.  This will encrypte the file contents based on an encrytion key from rgMan. 
+ * Version 1.4.x supports encryption of the modifiedConfig.json file.  This will encrypte the file contents based on an encrytion key passed during construction. 
  * To require encryption set encryptMyDataOnDisk = true.  If this is true and the encryption key is not available this class will throw.
  * 
  * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
@@ -22,13 +22,17 @@ var encryptionKey = null
  * @param {string} defaultGaugeConfigPath gaugeConfig.json location. Example: (__dirname + '/gaugeConfig.json'). This file must exist see ./samples/sample_gaugeConfig.json for an example format
  * @param {string} modifiedConfigMasterPath modifiedConfig.json location. Example: (__dirname + '/modifiedConfig.json'). This file will be created on first write if it doesn't exist. 
  * @param {bool} encryptMyDataOnDisk defaults to false.  Set to true if you want to encrypte the contents of modifiedConfigMasterPath file.  
+ * @param {string} dataEncryptionKey defaults to null. Pass the encryption key to use to encrypt and decrypt modifiedConfig.json file.
  */
 class appManager extends EventEmitter{
-    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = '', encryptMyDataOnDisk = false){
+    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = '', encryptMyDataOnDisk = false, dataEncryptionKey = null){
         super();
         this.encryptMyData = encryptMyDataOnDisk;
         this.encryptionAvailable = false;
-        if(this.encryptMyData){this.encryptionAvailable = getDataEncryptionKey()};
+        if(this.encryptMyData && dataEncryptionKey != null){
+            this.encryptionAvailable = true;
+            encryptionKey = dataEncryptionKey;
+        };
         if(this.encryptionAvailable){
             console.log('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
@@ -334,6 +338,7 @@ class appManager extends EventEmitter{
  * 
  * Returns ture if encryption key is avaible and sets the encryptionKey buffer.
  */
+/*
 function getDataEncryptionKey(){
     console.log('appManagerClass is asking rgMan for data encryption key status.')
     var raw = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
@@ -348,6 +353,7 @@ function getDataEncryptionKey(){
     };
     return false;
 };
+*/
 
 /**
  * Returns a buffer that repersents an array of bytes returned from a dbus-send command.
