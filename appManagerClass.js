@@ -129,8 +129,6 @@ class appManager extends EventEmitter{
         console.log('Sending Alert....')
         console.dir(objectToSend,{depth:null});
         try{
-        //var objAsStr = JSON.stringify(objectToSend);
-        //var asArry = objAsStr.split('');
         var asArry = JSON.stringify(objectToSend).split('');
         var nums = '[';
         asArry.forEach((val, indx)=>{
@@ -139,7 +137,6 @@ class appManager extends EventEmitter{
         })
         nums += ']';
         console.log('Calling gdbus to send alert to rgMan...');
-        //var result = cp.execSync("/usr/bin/gdbus call --system --dest com.rgMan --object-path /com/rgMan/gaugeAlert --method org.bluez.GattCharacteristic1.WriteValue " + nums);
         var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + nums);
         console.log('result = ' + result);
         } catch(err){
@@ -228,7 +225,7 @@ class appManager extends EventEmitter{
         this.gaugeStatus =  this.bPrl.Characteristic('002d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeStatus', ["encrypt-read","notify"]);
         this.gaugeValue =   this.bPrl.Characteristic('003d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeValue', ["encrypt-read","notify"]);
         this.gaugeCommand = this.bPrl.Characteristic('004d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeCommand', ["encrypt-read","encrypt-write"]);
-        this.gaugeConfig =  this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
+        //this.gaugeConfig =  this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
     
         console.log('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
@@ -329,31 +326,9 @@ class appManager extends EventEmitter{
         console.log('setting default characteristic values...');
         this.gaugeValue.setValue(this.value);
         this.gaugeStatus.setValue(this.status)
-        this.gaugeConfig.setValue(JSON.stringify(this.config));
+        //this.gaugeConfig.setValue(JSON.stringify(this.config));
     };
 };
-
-/**
- * Makes a process call to rgMan and reads the encryption key.  Uses the dbus=send command to read values.
- * 
- * Returns ture if encryption key is avaible and sets the encryptionKey buffer.
- */
-/*
-function getDataEncryptionKey(){
-    console.log('appManagerClass is asking rgMan for data encryption key status.')
-    var raw = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherStatus org.bluez.GattCharacteristic1.ReadValue");
-    var result = parseText(raw.toString())
-    if(result == 'Key is available'){
-        console.log('appManagerClass is reading encrytion key from rgMan');
-        var keyText = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/cipherKey org.bluez.GattCharacteristic1.ReadValue");
-        encryptionKey = parseKey(keyText.toString());
-        return true;
-    } else {
-        console.log('Encrytion key not available, status = ' + result);
-    };
-    return false;
-};
-*/
 
 /**
  * Returns a buffer that repersents an array of bytes returned from a dbus-send command.
