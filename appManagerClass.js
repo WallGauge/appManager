@@ -15,6 +15,10 @@ var encryptionKey = null
  * Version 1.4.x supports encryption of the modifiedConfig.json file.  This will encrypte the file contents based on an encrytion key passed during construction. 
  * To require encryption set encryptMyDataOnDisk = true.  If this is true and the encryption key is not available this class will throw.
  * 
+ * Emits:
+ *  emit('Update'); when the configuration file has been changed and reloaded
+ *  emit('configReady'); when the config file has been loaded and decrypted.
+ * 
  * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
  * 
  * typical setup call ->const myAppMan = new AppMan(__dirname + '/gaugeConfig.json', __dirname + '/modifiedConfig.json');<-
@@ -51,9 +55,13 @@ class appManager extends EventEmitter{
         if (fs.existsSync(this.modifiedConfigFilePath)){
             if(this.encryptMyData){
                 this.modifiedConfigMaster = this._readEncryptedJsonFile(this.modifiedConfigFilePath);
+                this.emit('configReady');
             }  else {
                 this.modifiedConfigMaster = JSON.parse(fs.readFileSync(this.modifiedConfigFilePath))
+                this.emit('configReady');
             };
+        } else {
+            this.emit('configReady');
         };
 
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
