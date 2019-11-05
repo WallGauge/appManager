@@ -355,20 +355,17 @@ class appManager extends EventEmitter{
         };
 
         if('battLastReplaced' in this.config){
-            var batReplacedOn = null;
             if(this.config.battLastReplaced == ''){
                 console.log('Setting today as battery last replaced date.');
-                batReplacedOn = (new Date()).toISOString();
+                var batReplacedOn = (new Date()).toISOString();
                 this.saveItem({battLastReplaced:batReplacedOn});
                 this.battLastReplaced.setValue(batReplacedOn);
             } else {
-                batReplacedOn = new Date(myAppMan.config.battLastReplaced);
                 this.battLastReplaced.setValue(this.config.battLastReplaced);
             };
         } else {
             console.log('appManager Alert: This gauges config is missing battLastReplaced key:value.');
         };
-
     };
 };
 
