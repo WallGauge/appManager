@@ -2,23 +2,20 @@ const AppManager = require("./appManagerClass.js");
 
 class myAppManager extends AppManager{
     bleMyConfig(){
-        console.log('Setting up sbPowerGauge specfic characteristics and config.'); 
-        var webBoxIp = this.bPrl.Characteristic('00000010-fe9e-4f7b-b56a-5f8294c6d817', 'webBoxIp', ["encrypt-read","encrypt-write"]);
-
-        webBoxIp.on('WriteValue', (device, arg1)=>{
-            console.log(device + ', has set new IP Address of ' + arg1);
-            webBoxIp.setValue(arg1);
+        console.log('Setting up Battery life expectancy characteristics...');
+        var battLastReplaced = this.bPrl.Characteristic('6b52b1c4-9b30-4851-84f8-b48d27b730a3', 'battLastReplaced', ["encrypt-read","encrypt-write"]);
+        battLastReplaced.on('WriteValue', (device, arg1)=>{
+            console.log(device + ', has set new battLastReplaced.');
+            battLastReplaced.setValue(arg1);
             var x = arg1.toString('utf8');
-            this.saveItem({webBoxIP:x});        //this will add {varName : Value} to this.config.  In this case to access the webBoxIP use this.config.webBoxIP
+            this.saveItem({battLastReplaced:x});        //this will add {varName : Value} to this.config.  In this case to access the battLastReplaced use this.config.battLastReplaced
         });
-
-        webBoxIp.on('ReadValue', (device)=>{
-            console.log(device + ' has connected and is reading wbBoxIP');
-            webBoxIp.setValue(this.config.webBoxIP);
-            return (this.config.webBoxIP);
+        battLastReplaced.on('ReadValue', (device)=>{
+            console.log(device + ' has connected and is reading battLastReplaced');
+            battLastReplaced.setValue(this.config.battLastReplaced);
+            return (this.config.battLastReplaced);
         });
-
-        webBoxIp.setValue(this.config.webBoxIP);
+        battLastReplaced.setValue(this.config.battLastReplaced);
     };
 };
 

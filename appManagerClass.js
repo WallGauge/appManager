@@ -229,11 +229,12 @@ class appManager extends EventEmitter{
         //this.bPrl.logCharacteristicsIO = true;
         //this.bPrl.logAllDBusMessages = true;
         console.log('Initialize charcteristics...')
-        this.appVer =       this.bPrl.Characteristic('001d6a44-2551-4342-83c9-c18a16a3afa5', 'appVer', ["encrypt-read"]);
-        this.gaugeStatus =  this.bPrl.Characteristic('002d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeStatus', ["encrypt-read","notify"]);
-        this.gaugeValue =   this.bPrl.Characteristic('003d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeValue', ["encrypt-read","notify"]);
-        this.gaugeCommand = this.bPrl.Characteristic('004d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeCommand', ["encrypt-read","encrypt-write"]);
-        this.gaugeConfig =  this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
+        this.appVer =           this.bPrl.Characteristic('001d6a44-2551-4342-83c9-c18a16a3afa5', 'appVer', ["encrypt-read"]);
+        this.gaugeStatus =      this.bPrl.Characteristic('002d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeStatus', ["encrypt-read","notify"]);
+        this.gaugeValue =       this.bPrl.Characteristic('003d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeValue', ["encrypt-read","notify"]);
+        this.gaugeCommand =     this.bPrl.Characteristic('004d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeCommand', ["encrypt-read","encrypt-write"]);
+        this.gaugeConfig =      this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
+        this.battLifeInDays =   this.bPrl.Characteristic('90a5cca6-36f3-4a02-b02d-348921c50fd8', 'battLifeInDays', ["encrypt-read"]);
     
         console.log('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
@@ -339,6 +340,9 @@ class appManager extends EventEmitter{
             uuid : this.config.uuid
         };
         this.gaugeConfig.setValue(JSON.stringify(cleanCfgObg));
+        if(this.config.battLifeInDays){
+            this.battLifeInDays.setValue(this.config.battLifeInDays);
+        }
     };
 };
 
