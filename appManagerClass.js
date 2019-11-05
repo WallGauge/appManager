@@ -29,7 +29,7 @@ var encryptionKey = null
  * @param {string} dataEncryptionKey defaults to null. Pass the encryption key to use to encrypt and decrypt modifiedConfig.json file.
  */
 class appManager extends EventEmitter{
-    constructor(defaultGaugeConfigPath = '', modifiedConfigMasterPath = '', encryptMyDataOnDisk = false, dataEncryptionKey = null){
+    constructor(defaultGaugeConfigPath = __dirname + '/gaugeConfig.json', modifiedConfigMasterPath =  __dirname + '/modifiedConfig.json', encryptMyDataOnDisk = false, dataEncryptionKey = null){
         super();
         this.encryptMyData = encryptMyDataOnDisk;
         this.encryptionAvailable = false;
@@ -235,7 +235,8 @@ class appManager extends EventEmitter{
         this.gaugeCommand =     this.bPrl.Characteristic('004d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeCommand', ["encrypt-read","encrypt-write"]);
         this.gaugeConfig =      this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
         this.battLifeInDays =   this.bPrl.Characteristic('90a5cca6-36f3-4a02-b02d-348921c50fd8', 'battLifeInDays', ["encrypt-read"]);
-    
+        this.battLastReplaced = this.bPrl.Characteristic('6b52b1c4-9b30-4851-84f8-b48d27b730a3', 'battLastReplaced', ["encrypt-read","encrypt-write"]);
+      
         console.log('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
             var cmdNum = arg1.toString()
@@ -331,7 +332,13 @@ class appManager extends EventEmitter{
             console.log(device + ' requesting app version')
             this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
         })
-        
+        this.battLastReplaced.on('WriteValue', (device, arg1)=>{
+            console.log(device + ', has set new battLastReplaced.');
+            this.battLastReplaced.setValue(arg1);
+            var x = arg1.toString('utf8');
+            this.saveItem({battLastReplaced:x});        //this will add {varName : Value} to this.config.  In this case to access the battLastReplaced use this.config.battLastReplaced
+        });
+
         console.log('setting default characteristic values...');
         this.gaugeValue.setValue(this.value);
         this.gaugeStatus.setValue(this.status)
@@ -340,9 +347,28 @@ class appManager extends EventEmitter{
             uuid : this.config.uuid
         };
         this.gaugeConfig.setValue(JSON.stringify(cleanCfgObg));
-        if(this.config.battLifeInDays){
+
+        if('battLifeInDays' in this.config){
             this.battLifeInDays.setValue(this.config.battLifeInDays);
-        }
+        } else {
+            console.log('appManager Alert: This gauges config is missing battLifeInDays key:value.');
+        };
+
+        if('battLastReplaced' in this.config){
+            var batReplacedOn = null;
+            if(this.config.battLastReplaced == ''){
+                console.log('Setting today as battery last replaced date.');
+                batReplacedOn = (new Date()).toISOString();
+                this.saveItem({battLastReplaced:batReplacedOn});
+                this.battLastReplaced.setValue(batReplacedOn);
+            } else {
+                batReplacedOn = new Date(myAppMan.config.battLastReplaced);
+                this.battLastReplaced.setValue(this.config.battLastReplaced);
+            };
+        } else {
+            console.log('appManager Alert: This gauges config is missing battLastReplaced key:value.');
+        };
+
     };
 };
 
@@ -371,7 +397,5 @@ function parseText(valueAsString){
     var x = valueAsString.split('"');
     return x[1];
 };
-
-
 
 module.exports = appManager;
