@@ -137,8 +137,9 @@ class appManager extends EventEmitter{
         console.log('Sending Alert....')
         console.dir(objectToSend,{depth:null});
         try{
-        var asArry = JSON.stringify(objectToSend).split('');
+        var asArry = JSON.stringify(objectToSend);    
         /*
+        var asArry = JSON.stringify(objectToSend).split('');
         var nums = '[';
         asArry.forEach((val, indx)=>{
             nums += '0x' + val.charCodeAt().toString(16);
