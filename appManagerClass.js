@@ -138,6 +138,7 @@ class appManager extends EventEmitter{
         console.dir(objectToSend,{depth:null});
         try{
         var asArry = JSON.stringify(objectToSend);    
+        console.log('here is alert after stringify :' + asArry)
         /*
         var asArry = JSON.stringify(objectToSend).split('');
         var nums = '[';
@@ -148,7 +149,7 @@ class appManager extends EventEmitter{
         nums += ']';
         */
         console.log('Calling gdbus to send alert to rgMan...');
-        var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + objectToSend);
+        var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" +  asArry + "'");
         console.log('result = ' + result);
         } catch(err){
             console.log('Error when trying to sendAlert to rgMan ' + err);
