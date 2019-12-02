@@ -196,7 +196,11 @@ class appManager extends EventEmitter{
             };
         };
         this.config = {...this.defaultConfigMaster, ...this.modifiedConfigMaster};
-        this.gaugeConfig.setValue(JSON.stringify(this.config));
+        var cleanCfgObg = {
+            descripition : this.config.descripition,
+            uuid : this.config.uuid
+        };
+        this.gaugeConfig.setValue(JSON.stringify(cleanCfgObg));
         console.log('firing "Update" event...');
         this.emit('Update');
     };
