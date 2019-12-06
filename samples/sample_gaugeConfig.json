@@ -5,5 +5,6 @@
     "calibrationTable": [[0,14],[1000,95],[2000,175],[3000,255],[4000,335],[5000,415],[6000,495],[7000,575],[7250,614]],
     "gaugeIrAddress":"26",
     "battLifeInDays":"365",
-    "battLastReplaced":""
+    "battLastReplaced":"",
+    "gaugeURL":"https://WallGauge.com"
 }

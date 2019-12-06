@@ -244,6 +244,7 @@ class appManager extends EventEmitter{
         this.gaugeConfig =      this.bPrl.Characteristic('005d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeConfig', ["encrypt-read"]);
         this.battLifeInDays =   this.bPrl.Characteristic('90a5cca6-36f3-4a02-b02d-348921c50fd8', 'battLifeInDays', ["encrypt-read"]);
         this.battLastReplaced = this.bPrl.Characteristic('6b52b1c4-9b30-4851-84f8-b48d27b730a3', 'battLastReplaced', ["encrypt-read","encrypt-write"]);
+        this.gaugeURL =         this.bPrl.Characteristic('52261f60-c6a0-4ca9-93ba-c0ea76a842af', 'gaugeURL', ["encrypt-read"]);
       
         console.log('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
@@ -361,6 +362,13 @@ class appManager extends EventEmitter{
         } else {
             console.log('appManager Alert: This gauges config is missing battLifeInDays key:value.');
         };
+
+        if('gaugeURL' in this.config){
+            this.gaugeURL.setValue(this.config.gaugeURL);
+        } else {
+            console.log('appManager Alert: This gauges config is missing gaugeURL key:value.');
+        };
+
 
         if('battLastReplaced' in this.config){
             if(this.config.battLastReplaced == ''){
