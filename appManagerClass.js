@@ -340,8 +340,7 @@ class appManager extends EventEmitter{
         this.appVer.on('ReadValue', (device) =>{
             console.log(device + ' requesting app version')
             var version = (JSON.parse(fs.readFileSync('package.json'))).version
-            console.log('calling get Branch with ' + __dirname);
-            version = version + getBranch(__dirname);
+            version = version + getBranch('./');
             // this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
             this.appVer.setValue(version);
         })
