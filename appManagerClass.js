@@ -339,7 +339,11 @@ class appManager extends EventEmitter{
         
         this.appVer.on('ReadValue', (device) =>{
             console.log(device + ' requesting app version')
-            this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
+            var version = (JSON.parse(fs.readFileSync('package.json'))).version
+            console.log('calling get Branch with ' + __dirname);
+            version = version + getBranch(__dirname);
+            // this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
+            this.appVer.setValue(version);
         })
         this.battLastReplaced.on('WriteValue', (device, arg1)=>{
             console.log(device + ', has set new battLastReplaced.');
@@ -382,6 +386,23 @@ class appManager extends EventEmitter{
         } else {
             console.log('appManager Alert: This gauges config is missing battLastReplaced key:value.');
         };
+    };
+};
+
+function getBranch(appDir = '/opt/rGauge/rgMan'){
+    var returnStr = "";
+    var resultStr = cp.execSync('/usr/bin/git branch', {cwd: appDir});
+    resultArry = (resultStr.toString()).split(" ");
+    resultArry.forEach((val, index)=>{
+        if(val == '*'){
+            returnStr = (resultArry[index + 1]).trim();
+        };
+    });
+    if(returnStr == 'master'){
+        return '';
+    } else {
+        console.log(appDir + ' is using the ' + returnStr + ' branch.'); 
+        return (' ' + returnStr);
     };
 };
 
