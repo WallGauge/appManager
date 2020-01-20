@@ -116,6 +116,8 @@ class appManager extends EventEmitter{
 
         if(this.gaugeValue.iface.Notifying && this.bPrl.client.connected){
             this.gaugeValue.notify();
+        } else {
+            console.log('Notify not on. iface.Notifying = '+ this.gaugeValue.iface.Notifying +', client.connected = ' + this.bPrl.client.connected);
         };
         return true;
     };
