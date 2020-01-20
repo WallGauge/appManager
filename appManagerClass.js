@@ -114,10 +114,8 @@ class appManager extends EventEmitter{
         this.value = logValue;
         this.gaugeValue.setValue(logValue);
 
-        if(this.gaugeValue.iface.Notifying && this.bPrl.client.connected){
+        if(this.gaugeValue.iface.Notifying){
             this.gaugeValue.notify();
-        } else {
-            console.log('Notify not on. iface.Notifying = '+ this.gaugeValue.iface.Notifying +', client.connected = ' + this.bPrl.client.connected);
         };
         return true;
     };
@@ -130,7 +128,7 @@ class appManager extends EventEmitter{
         this.status = statusStr;
         this.gaugeStatus.setValue(statusStr);
 
-        if(this.gaugeStatus.iface.Notifying && this.bPrl.client.connected){
+        if(this.gaugeStatus.iface.Notifying){
             this.gaugeStatus.notify();
         };
     };  
