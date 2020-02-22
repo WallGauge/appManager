@@ -38,7 +38,7 @@ class appManager extends EventEmitter{
             encryptionKey = dataEncryptionKey;
         };
         if(this.encryptionAvailable){
-            console.log('appManagerClass has a data encryption key. Setting up encryption...');
+            console.debug('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
         };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
@@ -46,8 +46,8 @@ class appManager extends EventEmitter{
         if (fs.existsSync(this.defaultConfigFilepath)){
             this.defaultConfigMaster = JSON.parse(fs.readFileSync(this.defaultConfigFilepath))
         } else {
-            console.log('Error Config file located at ' + this.defaultConfigFilepath + ', not found!');
-            console.log('From:' + __filename);
+            console.error('Error Config file located at ' + this.defaultConfigFilepath + ', not found!');
+            console.error('From:' + __filename);
             throw new Error('Default Config File not found.');
         };
         this.modifiedConfigFilePath = modifiedConfigMasterPath;
@@ -80,14 +80,14 @@ class appManager extends EventEmitter{
               bleUserName = this.bPrl.client.name;
             };
             if(connected == true){
-              console.log('--> ' + bleUserName + ' has connected to this server at ' + (new Date()).toLocaleTimeString());
+              console.debug('--> ' + bleUserName + ' has connected to this server at ' + (new Date()).toLocaleTimeString());
               if(this.bPrl.client.paired == false){
-                console.log('--> CAUTION: This BLE device is not authenticated.');
+                console.debug('--> CAUTION: This BLE device is not authenticated.');
               }
             } else {
-              console.log('<-- ' + bleUserName + ' has disconnected from this server at ' + (new Date()).toLocaleTimeString());
+              console.debug('<-- ' + bleUserName + ' has disconnected from this server at ' + (new Date()).toLocaleTimeString());
               if(this.bPrl.areAnyCharacteristicsNotifying() == true){
-                console.log('Restarting gatt services to cleanup leftover notifications...')
+                console.debug('Restarting gatt services to cleanup leftover notifications...')
                 this.bPrl.restartGattService();
               };
             };
@@ -134,25 +134,13 @@ class appManager extends EventEmitter{
     };  
     
     sendAlert(objectToSend = {[this.config.descripition]:"1"}){
-        console.log('Sending Alert....')
+        console.debug('Sending Alert....')
         console.dir(objectToSend,{depth:null});
         try{
         var asArry = JSON.stringify(objectToSend);    
-        console.log('here is alert after stringify :' + asArry)
-        /*
-        var asArry = JSON.stringify(objectToSend).split('');
-        var nums = '[';
-        asArry.forEach((val, indx)=>{
-            nums += '0x' + val.charCodeAt().toString(16);
-            if(indx + 1 != asArry.length){nums += ','};
-        })
-        nums += ']';
-        */
-        console.log('Calling gdbus to send alert to rgMan...');
         var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" +  asArry + "'");
-        console.log('result = ' + result);
         } catch(err){
-            console.log('Error when trying to sendAlert to rgMan ' + err);
+            console.error('Error when trying to sendAlert to rgMan ', err);
         };
     };
 
@@ -160,7 +148,7 @@ class appManager extends EventEmitter{
      * This method will be called after _bleMasterConfig() allowing custom characteristics to be added.
      */
     bleMyConfig(){
-        console.log('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
+        console.debug('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
     };
 
     /** Saves custom config items to the config file located in modifiedConfigMasterPath 
@@ -169,9 +157,8 @@ class appManager extends EventEmitter{
      * @param {Object} itemsToSaveAsObject 
      */
     saveItem(itemsToSaveAsObject){
-        console.log('saveItem called with:');
-        if(!this.encryptMyData)console.log(itemsToSaveAsObject);
-    
+        console.debug('saveItem called with:');
+        // if(!this.encryptMyData)console.debug(itemsToSaveAsObject);
         var itemList = Object.keys(itemsToSaveAsObject);
         itemList.forEach((keyName)=>{
             this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
@@ -179,14 +166,14 @@ class appManager extends EventEmitter{
         if(this.encryptMyData){
             this._writeJsonToEncryptedFile(this.modifiedConfigFilePath, this.modifiedConfigMaster)
         } else {
-            console.log('Writting file (not using encryption) to ' + this.modifiedConfigFilePath);
+            console.debug('Writting file (not using encryption) to ' + this.modifiedConfigFilePath);
             fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
         };
         this._reloadConfig();
     };
 
     _reloadConfig(){
-        console.log('config reloading...');
+        console.debug('config reloading...');
         this.modifiedConfigMaster = {};
         if (fs.existsSync(this.modifiedConfigFilePath)){
             if(this.encryptMyData){
@@ -201,29 +188,29 @@ class appManager extends EventEmitter{
             uuid : this.config.uuid
         };
         this.gaugeConfig.setValue(JSON.stringify(cleanCfgObg));
-        console.log('firing "Update" event...');
+        console.debug('firing "Update" event...');
         this.emit('Update');
     };
 
     _readEncryptedJsonFile(jsonFilePath){
-        console.log('appManagerClass is reading and decrypting ' + jsonFilePath);
+        console.debug('appManagerClass is reading and decrypting ' + jsonFilePath);
         if(this.encryptionAvailable){
             var encryptedFileContents = fs.readFileSync(jsonFilePath, 'utf8');
             var decryptedFileContents = crypto.decrypt(encryptedFileContents);
             return JSON.parse(decryptedFileContents);
         } else {
-            console.log('ERROR Call to appManagerClass readEncryptedJsonFile method but encryption is not available.')
+            console.error('ERROR Call to appManagerClass readEncryptedJsonFile method but encryption is not available.')
             throw Error ('Call to appManagerClass readEncryptedJsonFile method but encryption is not available.');
         };
     };
     
     _writeJsonToEncryptedFile(filePath, jsonObj){
-        console.log('appManagerClass is encrypting and saving JSON Object to ' + filePath);
+        console.debug('appManagerClass is encrypting and saving JSON Object to ' + filePath);
         if(this.encryptionAvailable){
             var encryptedFileBuffer = crypto.encrypt(JSON.stringify(jsonObj));
             fs.writeFileSync(filePath, encryptedFileBuffer);
         } else {
-            console.log('ERROR Call to appManagerClass writeJsonToEncryptedFile method but encryption is not available.')
+            console.error('ERROR Call to appManagerClass writeJsonToEncryptedFile method but encryption is not available.')
             throw Error ('Call to appManagerClass writeJsonToEncryptedFile method but encryption is not available.');
         };
     };
@@ -236,7 +223,7 @@ class appManager extends EventEmitter{
     _bleMasterConfig(){
         //this.bPrl.logCharacteristicsIO = true;
         //this.bPrl.logAllDBusMessages = true;
-        console.log('Initialize charcteristics...')
+        console.debug('Initialize charcteristics...')
         this.appVer =           this.bPrl.Characteristic('001d6a44-2551-4342-83c9-c18a16a3afa5', 'appVer', ["encrypt-read"]);
         this.gaugeStatus =      this.bPrl.Characteristic('002d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeStatus', ["encrypt-read","notify"]);
         this.gaugeValue =       this.bPrl.Characteristic('003d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeValue', ["encrypt-read","notify"]);
@@ -246,91 +233,91 @@ class appManager extends EventEmitter{
         this.battLastReplaced = this.bPrl.Characteristic('6b52b1c4-9b30-4851-84f8-b48d27b730a3', 'battLastReplaced', ["encrypt-read","encrypt-write"]);
         this.gaugeURL =         this.bPrl.Characteristic('52261f60-c6a0-4ca9-93ba-c0ea76a842af', 'gaugeURL', ["encrypt-read"]);
       
-        console.log('Registering event handlers...');
+        console.debug('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
             var cmdNum = arg1.toString()
             //var cmdValue = arg1[1]
             var cmdResult = 'okay';
-            console.log(device + ' has sent a new gauge command: number = ' + cmdNum);
+            console.debug(device + ' has sent a new gauge command: number = ' + cmdNum);
     
             switch (cmdNum) {
                 case '0':   
-                    console.log('Sending test battery to gauge...');
-                    console.log('Disabling sending of gauge value during adminstration.');
+                    console.debug('Sending test battery to gauge...');
+                    console.debug('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
                     this.setGaugeStatus('Sending test battery command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Check_Battery_Voltage));
                 break;
         
                 case '1':  
-                    console.log('Disabling sending of gauge value during adminstration.');
+                    console.debug('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
-                    console.log('Sending gauge reset request ');
+                    console.debug('Sending gauge reset request ');
                     this.setGaugeStatus('Sending reset command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Reset));
                 break;
     
                 case '2':  
-                    console.log('Disabling sending of gauge value during adminstration.');
+                    console.debug('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;  
-                    console.log('Sending gauge Zero Needle request ');
+                    console.debug('Sending gauge Zero Needle request ');
                     this.setGaugeStatus('Sending zero needle command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Zero_Needle));
                 break;          
         
                 case '3':  
-                    console.log('Disabling sending of gauge value during adminstration.');
+                    console.debug('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
-                    console.log('Sending Identifify gauge request')
+                    console.debug('Sending Identifify gauge request')
                     this.setGaugeStatus('Sending identifify command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Identifify));
                 break;
     
                 case '4': 
-                    console.log('Disable normal gauge value TX during adminstration.')
+                    console.debug('Disable normal gauge value TX during adminstration.')
                     this.setGaugeStatus('Disable normal gauge value transmission during adminstration. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this._okToSend = false;
                     this.gTx.sendEncodedCmd(0);
                 break;
         
                 case '5':    
-                    console.log('Enable normal gauge value TX.')
+                    console.debug('Enable normal gauge value TX.')
                     this.setGaugeStatus('Enabling normal gauge value transmission. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this._okToSend = true;
                 break;
 
                 case '6':    
-                    console.log('Resetting gauge configuration to default.')
+                    console.debug('Resetting gauge configuration to default.')
                     if (fs.existsSync(this.modifiedConfigFilePath)){
-                        console.log('Removing custom configuration file' + this.modifiedConfigFilePath);
+                        console.debug('Removing custom configuration file' + this.modifiedConfigFilePath);
                         this.setGaugeStatus('Removing custom configuration file and resetting gauge to default config. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                         fs.unlinkSync(this.modifiedConfigFilePath);
                         this._reloadConfig();
                     } else {
-                        console.log('Warning: Custom configuration file not found.');
+                        console.debug('Warning: Custom configuration file not found.');
                         cmdResult='Warning: Custom configuration file not found.'
                     };                   
                 break;
 
                 case "10":
-                    console.log('Enable normal gauge value TX.')
+                    console.debug('Enable normal gauge value TX.')
                     this._okToSend = true;
-                    console.log("Send the value zero to gauge and enabling normal gauge TX.")
+                    console.debug("Send the value zero to gauge and enabling normal gauge TX.")
                     this.setGaugeValue(0)
                 break;
                     
                 case "20":   
-                    console.log('Test: Flag Alert to rgMan');
+                    console.debug('Test: Flag Alert to rgMan');
                     this.sendAlert({[this.config.descripition]:"1"});
                 break;
 
                 case "21":  
-                    console.log('test: Clear Alert to rgMan');
+                    console.debug('test: Clear Alert to rgMan');
                     this.sendAlert({[this.config.descripition]:"0"});
                 break;
             
                 default:
-                    console.log('no case for ' + cmdNum);
+                    console.debug('no case for ' + cmdNum);
                     cmdResult='Warning: no case or action for this command.'
                 break;
             };
@@ -338,20 +325,20 @@ class appManager extends EventEmitter{
         });   
         
         this.appVer.on('ReadValue', (device) =>{
-            console.log(device + ' requesting app version')
+            console.debug(device + ' requesting app version')
             var version = (JSON.parse(fs.readFileSync('package.json'))).version
             version = version + getBranch('./');
             // this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
             this.appVer.setValue(version);
         })
         this.battLastReplaced.on('WriteValue', (device, arg1)=>{
-            console.log(device + ', has set new battLastReplaced.');
+            console.debug(device + ', has set new battLastReplaced.');
             this.battLastReplaced.setValue(arg1);
             var x = arg1.toString('utf8');
             this.saveItem({battLastReplaced:x});        //this will add {varName : Value} to this.config.  In this case to access the battLastReplaced use this.config.battLastReplaced
         });
 
-        console.log('setting default characteristic values...');
+        console.debug('setting default characteristic values...');
         this.gaugeValue.setValue(this.value);
         this.gaugeStatus.setValue(this.status)
         var cleanCfgObg = {
@@ -363,19 +350,19 @@ class appManager extends EventEmitter{
         if('battLifeInDays' in this.config){
             this.battLifeInDays.setValue(this.config.battLifeInDays);
         } else {
-            console.log('appManager Alert: This gauges config is missing battLifeInDays key:value.');
+            console.warn('appManager Alert: This gauges config is missing battLifeInDays key:value.');
         };
 
         if('gaugeURL' in this.config){
             this.gaugeURL.setValue(this.config.gaugeURL);
         } else {
-            console.log('appManager Alert: This gauges config is missing gaugeURL key:value.');
+            console.warn('appManager Alert: This gauges config is missing gaugeURL key:value.');
         };
 
 
         if('battLastReplaced' in this.config){
             if(this.config.battLastReplaced == ''){
-                console.log('Setting today as battery last replaced date.');
+                console.debug('Setting today as battery last replaced date.');
                 var batReplacedOn = (new Date()).toISOString();
                 this.saveItem({battLastReplaced:batReplacedOn});
                 this.battLastReplaced.setValue(batReplacedOn);
@@ -383,7 +370,7 @@ class appManager extends EventEmitter{
                 this.battLastReplaced.setValue(this.config.battLastReplaced);
             };
         } else {
-            console.log('appManager Alert: This gauges config is missing battLastReplaced key:value.');
+            console.warn('appManager Alert: This gauges config is missing battLastReplaced key:value.');
         };
     };
 };
@@ -400,7 +387,7 @@ function getBranch(appDir = '/opt/rGauge/rgMan'){
     if(returnStr == 'master'){
         return '';
     } else {
-        console.log(appDir + ' is using the ' + returnStr + ' branch.'); 
+        console.debug(appDir + ' is using the ' + returnStr + ' branch.'); 
         return (' ' + returnStr);
     };
 };
