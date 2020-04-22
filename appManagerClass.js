@@ -94,9 +94,6 @@ class appManager extends EventEmitter{
               };
             };
         });
-
-        logit('emitting appManLoaded ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ')
-        this.emit('appManLoaded');
     };
 
     /** Transmits gauge vlaue to irTxServer, also sets BLE gauge vlaue and fires BLE notify
