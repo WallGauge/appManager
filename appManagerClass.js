@@ -5,30 +5,32 @@ const irTransmitter =   require('irdtxclass');
 const BLEperipheral =   require("ble-peripheral");
 const Crypto =          require("cipher").encryption;
 
+const logPrefix = 'appManagerClass.js | ';
+
 var self;
 var crypto = {};
 var encryptionKey = null
 
-/**
- * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
- * This class also provides a frontend to the irdTxClass and  blePeripheral class in the setGaugeStatus and setGaugeValue methods.
- * Version 1.4.x supports encryption of the modifiedConfig.json file.  This will encrypte the file contents based on an encrytion key passed during construction. 
- * To require encryption set encryptMyDataOnDisk = true.  If this is true and the encryption key is not available this class will throw.
- * 
- * Emits:
- *  emit('Update'); when the configuration file has been changed and reloaded
- *  emit('configReady'); when the config file has been loaded and decrypted.
- * 
- * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
- * 
- * typical setup call ->const myAppMan = new AppMan(__dirname + '/gaugeConfig.json', __dirname + '/modifiedConfig.json');<-
- * 
- * @param {string} defaultGaugeConfigPath gaugeConfig.json location. Example: (__dirname + '/gaugeConfig.json'). This file must exist see ./samples/sample_gaugeConfig.json for an example format
- * @param {string} modifiedConfigMasterPath modifiedConfig.json location. Example: (__dirname + '/modifiedConfig.json'). This file will be created on first write if it doesn't exist. 
- * @param {bool} encryptMyDataOnDisk defaults to false.  Set to true if you want to encrypte the contents of modifiedConfigMasterPath file.  
- * @param {string} dataEncryptionKey defaults to null. Pass the encryption key to use to encrypt and decrypt modifiedConfig.json file.
- */
 class appManager extends EventEmitter{
+    /**
+     * This class provides an interface to the gauge’s factory default configuration settings. Typically, these settings are stored in a file called gaugeConfig.json, with user modifications to the factory defaults in a file called modifiedConfig.json. 
+     * This class also provides a frontend to the irdTxClass and  blePeripheral class in the setGaugeStatus and setGaugeValue methods.
+     * Version 1.4.x supports encryption of the modifiedConfig.json file.  This will encrypte the file contents based on an encrytion key passed during construction. 
+     * To require encryption set encryptMyDataOnDisk = true.  If this is true and the encryption key is not available this class will throw.
+     * 
+     * Emits:
+     *  emit('Update'); when the configuration file has been changed and reloaded
+     *  emit('configReady'); when the config file has been loaded and decrypted.
+     * 
+     * ** * gaugConfig.json must have key fields such as UUID and dBusName and conform to a JSON format.  See the README.md for details or the smaple file located in ./samples/sample_gaugeConfig.json **
+     * 
+     * typical setup call ->const myAppMan = new AppMan(__dirname + '/gaugeConfig.json', __dirname + '/modifiedConfig.json');<-
+     * 
+     * @param {string} defaultGaugeConfigPath gaugeConfig.json location. Example: (__dirname + '/gaugeConfig.json'). This file must exist see ./samples/sample_gaugeConfig.json for an example format
+     * @param {string} modifiedConfigMasterPath modifiedConfig.json location. Example: (__dirname + '/modifiedConfig.json'). This file will be created on first write if it doesn't exist. 
+     * @param {bool} encryptMyDataOnDisk defaults to false.  Set to true if you want to encrypte the contents of modifiedConfigMasterPath file.  
+     * @param {string} dataEncryptionKey defaults to null. Pass the encryption key to use to encrypt and decrypt modifiedConfig.json file.
+     */
     constructor(defaultGaugeConfigPath = __dirname + '/gaugeConfig.json', modifiedConfigMasterPath =  __dirname + '/modifiedConfig.json', encryptMyDataOnDisk = false, dataEncryptionKey = null){
         super();
         this.encryptMyData = encryptMyDataOnDisk;
@@ -38,7 +40,7 @@ class appManager extends EventEmitter{
             encryptionKey = dataEncryptionKey;
         };
         if(this.encryptionAvailable){
-            console.debug('appManagerClass has a data encryption key. Setting up encryption...');
+            logit('appManagerClass has a data encryption key. Setting up encryption...');
             crypto = new Crypto(encryptionKey);
         };
         this.defaultConfigFilepath = defaultGaugeConfigPath;
@@ -80,23 +82,25 @@ class appManager extends EventEmitter{
               bleUserName = this.bPrl.client.name;
             };
             if(connected == true){
-              console.debug('--> ' + bleUserName + ' has connected to this server at ' + (new Date()).toLocaleTimeString());
+              logit('--> ' + bleUserName + ' has connected to this server at ' + (new Date()).toLocaleTimeString());
               if(this.bPrl.client.paired == false){
-                console.debug('--> CAUTION: This BLE device is not authenticated.');
+                logit('--> CAUTION: This BLE device is not authenticated.');
               }
             } else {
-              console.debug('<-- ' + bleUserName + ' has disconnected from this server at ' + (new Date()).toLocaleTimeString());
+              logit('<-- ' + bleUserName + ' has disconnected from this server at ' + (new Date()).toLocaleTimeString());
               if(this.bPrl.areAnyCharacteristicsNotifying() == true){
-                console.debug('Restarting gatt services to cleanup leftover notifications...')
+                logit('Restarting gatt services to cleanup leftover notifications...')
                 this.bPrl.restartGattService();
               };
             };
         });
+
+        this.emit('appManLoaded');
     };
 
     /** Transmits gauge vlaue to irTxServer, also sets BLE gauge vlaue and fires BLE notify
      * 
-     * @param {*} value is the gauge vlue
+     * @param {*} value is the gauge value
      * @param {string} descripition is an optional description of value
      */
     setGaugeValue(value, descripition = ''){
@@ -134,7 +138,7 @@ class appManager extends EventEmitter{
     };  
     
     sendAlert(objectToSend = {[this.config.descripition]:"1"}){
-        console.debug('Sending Alert....')
+        logit('Sending Alert....')
         console.dir(objectToSend,{depth:null});
         try{
         var asArry = JSON.stringify(objectToSend);    
@@ -148,7 +152,7 @@ class appManager extends EventEmitter{
      * This method will be called after _bleMasterConfig() allowing custom characteristics to be added.
      */
     bleMyConfig(){
-        console.debug('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
+        logit('bleMyConfig not extended, there will not be any unique app characteristics set.  Using defaults only.');
     };
 
     /** Saves custom config items to the config file located in modifiedConfigMasterPath 
@@ -157,8 +161,8 @@ class appManager extends EventEmitter{
      * @param {Object} itemsToSaveAsObject 
      */
     saveItem(itemsToSaveAsObject){
-        console.debug('saveItem called with:');
-        // if(!this.encryptMyData)console.debug(itemsToSaveAsObject);
+        logit('saveItem called with:');
+        // if(!this.encryptMyData)logit(itemsToSaveAsObject);
         var itemList = Object.keys(itemsToSaveAsObject);
         itemList.forEach((keyName)=>{
             this.modifiedConfigMaster[keyName] = itemsToSaveAsObject[keyName];
@@ -166,14 +170,14 @@ class appManager extends EventEmitter{
         if(this.encryptMyData){
             this._writeJsonToEncryptedFile(this.modifiedConfigFilePath, this.modifiedConfigMaster)
         } else {
-            console.debug('Writting file (not using encryption) to ' + this.modifiedConfigFilePath);
+            logit('Writting file (not using encryption) to ' + this.modifiedConfigFilePath);
             fs.writeFileSync(this.modifiedConfigFilePath, JSON.stringify(this.modifiedConfigMaster));
         };
         this._reloadConfig();
     };
 
     _reloadConfig(){
-        console.debug('config reloading...');
+        logit('config reloading...');
         this.modifiedConfigMaster = {};
         if (fs.existsSync(this.modifiedConfigFilePath)){
             if(this.encryptMyData){
@@ -188,12 +192,12 @@ class appManager extends EventEmitter{
             uuid : this.config.uuid
         };
         this.gaugeConfig.setValue(JSON.stringify(cleanCfgObg));
-        console.debug('firing "Update" event...');
+        logit('firing "Update" event...');
         this.emit('Update');
     };
 
     _readEncryptedJsonFile(jsonFilePath){
-        console.debug('appManagerClass is reading and decrypting ' + jsonFilePath);
+        logit('appManagerClass is reading and decrypting ' + jsonFilePath);
         if(this.encryptionAvailable){
             var encryptedFileContents = fs.readFileSync(jsonFilePath, 'utf8');
             var decryptedFileContents = crypto.decrypt(encryptedFileContents);
@@ -205,7 +209,7 @@ class appManager extends EventEmitter{
     };
     
     _writeJsonToEncryptedFile(filePath, jsonObj){
-        console.debug('appManagerClass is encrypting and saving JSON Object to ' + filePath);
+        logit('appManagerClass is encrypting and saving JSON Object to ' + filePath);
         if(this.encryptionAvailable){
             var encryptedFileBuffer = crypto.encrypt(JSON.stringify(jsonObj));
             fs.writeFileSync(filePath, encryptedFileBuffer);
@@ -223,7 +227,7 @@ class appManager extends EventEmitter{
     _bleMasterConfig(){
         //this.bPrl.logCharacteristicsIO = true;
         //this.bPrl.logAllDBusMessages = true;
-        console.debug('Initialize charcteristics...')
+        logit('Initialize charcteristics...')
         this.appVer =           this.bPrl.Characteristic('001d6a44-2551-4342-83c9-c18a16a3afa5', 'appVer', ["encrypt-read"]);
         this.gaugeStatus =      this.bPrl.Characteristic('002d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeStatus', ["encrypt-read","notify"]);
         this.gaugeValue =       this.bPrl.Characteristic('003d6a44-2551-4342-83c9-c18a16a3afa5', 'gaugeValue', ["encrypt-read","notify"]);
@@ -233,91 +237,91 @@ class appManager extends EventEmitter{
         this.battLastReplaced = this.bPrl.Characteristic('6b52b1c4-9b30-4851-84f8-b48d27b730a3', 'battLastReplaced', ["encrypt-read","encrypt-write"]);
         this.gaugeURL =         this.bPrl.Characteristic('52261f60-c6a0-4ca9-93ba-c0ea76a842af', 'gaugeURL', ["encrypt-read"]);
       
-        console.debug('Registering event handlers...');
+        logit('Registering event handlers...');
         this.gaugeCommand.on('WriteValue', (device, arg1)=>{
             var cmdNum = arg1.toString()
             //var cmdValue = arg1[1]
             var cmdResult = 'okay';
-            console.debug(device + ' has sent a new gauge command: number = ' + cmdNum);
+            logit(device + ' has sent a new gauge command: number = ' + cmdNum);
     
             switch (cmdNum) {
                 case '0':   
-                    console.debug('Sending test battery to gauge...');
-                    console.debug('Disabling sending of gauge value during adminstration.');
+                    logit('Sending test battery to gauge...');
+                    logit('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
                     this.setGaugeStatus('Sending test battery command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Check_Battery_Voltage));
                 break;
         
                 case '1':  
-                    console.debug('Disabling sending of gauge value during adminstration.');
+                    logit('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
-                    console.debug('Sending gauge reset request ');
+                    logit('Sending gauge reset request ');
                     this.setGaugeStatus('Sending reset command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Reset));
                 break;
     
                 case '2':  
-                    console.debug('Disabling sending of gauge value during adminstration.');
+                    logit('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;  
-                    console.debug('Sending gauge Zero Needle request ');
+                    logit('Sending gauge Zero Needle request ');
                     this.setGaugeStatus('Sending zero needle command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Zero_Needle));
                 break;          
         
                 case '3':  
-                    console.debug('Disabling sending of gauge value during adminstration.');
+                    logit('Disabling sending of gauge value during adminstration.');
                     this._okToSend = false;
-                    console.debug('Sending Identifify gauge request')
+                    logit('Sending Identifify gauge request')
                     this.setGaugeStatus('Sending identifify command to gauge. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this.gTx.sendEncodedCmd(this.gTx.encodeCmd(this.gTx._cmdList.Identifify));
                 break;
     
                 case '4': 
-                    console.debug('Disable normal gauge value TX during adminstration.')
+                    logit('Disable normal gauge value TX during adminstration.')
                     this.setGaugeStatus('Disable normal gauge value transmission during adminstration. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this._okToSend = false;
                     this.gTx.sendEncodedCmd(0);
                 break;
         
                 case '5':    
-                    console.debug('Enable normal gauge value TX.')
+                    logit('Enable normal gauge value TX.')
                     this.setGaugeStatus('Enabling normal gauge value transmission. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                     this._okToSend = true;
                 break;
 
                 case '6':    
-                    console.debug('Resetting gauge configuration to default.')
+                    logit('Resetting gauge configuration to default.')
                     if (fs.existsSync(this.modifiedConfigFilePath)){
-                        console.debug('Removing custom configuration file' + this.modifiedConfigFilePath);
+                        logit('Removing custom configuration file' + this.modifiedConfigFilePath);
                         this.setGaugeStatus('Removing custom configuration file and resetting gauge to default config. ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString());
                         fs.unlinkSync(this.modifiedConfigFilePath);
                         this._reloadConfig();
                     } else {
-                        console.debug('Warning: Custom configuration file not found.');
+                        logit('Warning: Custom configuration file not found.');
                         cmdResult='Warning: Custom configuration file not found.'
                     };                   
                 break;
 
                 case "10":
-                    console.debug('Enable normal gauge value TX.')
+                    logit('Enable normal gauge value TX.')
                     this._okToSend = true;
-                    console.debug("Send the value zero to gauge and enabling normal gauge TX.")
+                    logit("Send the value zero to gauge and enabling normal gauge TX.")
                     this.setGaugeValue(0)
                 break;
                     
                 case "20":   
-                    console.debug('Test: Flag Alert to rgMan');
+                    logit('Test: Flag Alert to rgMan');
                     this.sendAlert({[this.config.descripition]:"1"});
                 break;
 
                 case "21":  
-                    console.debug('test: Clear Alert to rgMan');
+                    logit('test: Clear Alert to rgMan');
                     this.sendAlert({[this.config.descripition]:"0"});
                 break;
             
                 default:
-                    console.debug('no case for ' + cmdNum);
+                    logit('no case for ' + cmdNum);
                     cmdResult='Warning: no case or action for this command.'
                 break;
             };
@@ -325,20 +329,20 @@ class appManager extends EventEmitter{
         });   
         
         this.appVer.on('ReadValue', (device) =>{
-            console.debug(device + ' requesting app version')
+            logit(device + ' requesting app version')
             var version = (JSON.parse(fs.readFileSync('package.json'))).version
             version = version + getBranch('./');
             // this.appVer.setValue((JSON.parse(fs.readFileSync('package.json'))).version);
             this.appVer.setValue(version);
         })
         this.battLastReplaced.on('WriteValue', (device, arg1)=>{
-            console.debug(device + ', has set new battLastReplaced.');
+            logit(device + ', has set new battLastReplaced.');
             this.battLastReplaced.setValue(arg1);
             var x = arg1.toString('utf8');
             this.saveItem({battLastReplaced:x});        //this will add {varName : Value} to this.config.  In this case to access the battLastReplaced use this.config.battLastReplaced
         });
 
-        console.debug('setting default characteristic values...');
+        logit('setting default characteristic values...');
         this.gaugeValue.setValue(this.value);
         this.gaugeStatus.setValue(this.status)
         var cleanCfgObg = {
@@ -362,7 +366,7 @@ class appManager extends EventEmitter{
 
         if('battLastReplaced' in this.config){
             if(this.config.battLastReplaced == ''){
-                console.debug('Setting today as battery last replaced date.');
+                logit('Setting today as battery last replaced date.');
                 var batReplacedOn = (new Date()).toISOString();
                 this.saveItem({battLastReplaced:batReplacedOn});
                 this.battLastReplaced.setValue(batReplacedOn);
@@ -387,7 +391,7 @@ function getBranch(appDir = '/opt/rGauge/rgMan'){
     if(returnStr == 'master'){
         return '';
     } else {
-        console.debug(appDir + ' is using the ' + returnStr + ' branch.'); 
+        logit(appDir + ' is using the ' + returnStr + ' branch.'); 
         return (' ' + returnStr);
     };
 };
@@ -419,3 +423,8 @@ function parseText(valueAsString){
 };
 
 module.exports = appManager;
+
+
+function logit(txt = ''){
+    console.debug(logPrefix + txt)
+};
