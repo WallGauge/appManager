@@ -95,6 +95,7 @@ class appManager extends EventEmitter{
             };
         });
 
+        logit('emitting appManLoaded ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ')
         this.emit('appManLoaded');
     };
 
