@@ -89,8 +89,7 @@ class appManager extends EventEmitter {
             } else {
                 logit('<-- ' + bleUserName + ' has disconnected from this server at ' + (new Date()).toLocaleTimeString());
                 if (this.bPrl.areAnyCharacteristicsNotifying() == true) {
-                    logit('Restarting gatt services to cleanup leftover notifications...')
-                    // this.bPrl.restartGattService();
+                    logit('Stopping leftover notifications...')
                     this.bPrl.clearAllNotifications();
                 };
             };
