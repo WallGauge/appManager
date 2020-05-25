@@ -140,9 +140,9 @@ class appManager extends EventEmitter {
         console.dir(objectToSend, { depth: null });
         try {
             var asArry = JSON.stringify(objectToSend);
-            var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.rgMan --print-reply=literal /com/rgMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'");
+            var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.gdtMan --print-reply=literal /com/gdtMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'");
         } catch (err) {
-            console.error('Error when trying to sendAlert to rgMan ', err);
+            console.error('Error when trying to sendAlert to gdtMan ', err);
         };
     };
 
@@ -309,12 +309,12 @@ class appManager extends EventEmitter {
                     break;
 
                 case "20":
-                    logit('Test: Flag Alert to rgMan');
+                    logit('Test: Flag Alert to gdtMan');
                     this.sendAlert({ [this.config.descripition]: "1" });
                     break;
 
                 case "21":
-                    logit('test: Clear Alert to rgMan');
+                    logit('test: Clear Alert to gdtMan');
                     this.sendAlert({ [this.config.descripition]: "0" });
                     break;
 
@@ -377,7 +377,7 @@ class appManager extends EventEmitter {
     };
 };
 
-function getBranch(appDir = '/opt/rGauge/rgMan') {
+function getBranch(appDir = '/opt/rGauge/gdtMan') {
     var returnStr = "";
     var resultStr = cp.execSync('/usr/bin/git branch', { cwd: appDir });
     resultArry = (resultStr.toString()).split(" ");

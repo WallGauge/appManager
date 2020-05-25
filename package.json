@@ -1,6 +1,6 @@
 {
   "name": "app-manager",
-  "version": "2.6.5",
+  "version": "2.7.0",
   "description": "Manages a gauge's config, BLE and irdTxServer communications.",
   "main": "appManagerClass.js",
   "scripts": {
@@ -8,14 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RuckerGauge/appManager.git"
+    "url": "git+https://github.com/WallGauge/appManager.git"
   },
   "author": "John Rucker",
   "license": "MIT",
   "homepage": "",
   "dependencies": {
-    "ble-peripheral": "RuckerGauge/blePeripheral",
-    "irdtxclass": "RuckerGauge/irdTxClass",
-    "cipher": "RuckerGauge/Cipher"
   }
 }
