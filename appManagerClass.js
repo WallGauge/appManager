@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const irTransmitter = require('irdtxclass');
 const BLEperipheral = require("ble-peripheral");
 const Crypto = require("cipher").encryption;
+const GdtManCom = ('./gdtManCom.js');
 
 const logPrefix = 'appManagerClass.js | ';
 
@@ -72,6 +73,7 @@ class appManager extends EventEmitter {
         this._okToSend = true;
         this.gTx = new irTransmitter(this.config.gaugeIrAddress, this.config.calibrationTable);
         this.bPrl = new BLEperipheral(this.config.dBusName, this.config.uuid, this._bleConfig, false);
+        this.gdtManCom = new GdtManCom(this.bPrl.dBusClient);
         self = this;
 
         this.bPrl.on('ConnectionChange', (connected) => {
@@ -135,17 +137,22 @@ class appManager extends EventEmitter {
         };
     };
 
-    sendAlert(objectToSend = { [this.config.descripition]: "1" }) {
-        logit('Sending Alert....')
-        console.dir(objectToSend, { depth: null });
-        var asArry = JSON.stringify(objectToSend);
-        logit("sending ->/usr/bin/dbus-send --system --dest=com.gdtMan --print-reply=literal /com/gdtMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'<-")
-        try {
-            // var asArry = JSON.stringify(objectToSend);
-            var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.gdtMan --print-reply=literal /com/gdtMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'");
-        } catch (err) {
-            console.error('Error when trying to sendAlert to gdtMan ', err);
-        };
+    sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
+        logit('Sending Alert....');
+        this.gdtManCom.sendAlert(objectToSend);
+
+        // console.dir(objectToSend, { depth: null });
+        // var asArry = JSON.stringify(objectToSend);
+       
+        
+
+
+        // try {
+        //     // var asArry = JSON.stringify(objectToSend);
+        //     var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.gdtMan --print-reply=literal /com/gdtMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'");
+        // } catch (err) {
+        //     console.error('Error when trying to sendAlert to gdtMan ', err);
+        // };
     };
 
     /** This is a blank method that can be extended. 
