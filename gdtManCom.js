@@ -7,7 +7,7 @@ class gdtManCom {
      * 
      * @param {object} DBusClient Is a dbus system object
      */
-    constructor(DBusClient = {}) {
+    constructor(DBusClient) {
         this._DBusClient = DBusClient;
     };
 

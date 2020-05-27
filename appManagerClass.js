@@ -4,7 +4,7 @@ const EventEmitter = require('events');
 const irTransmitter = require('irdtxclass');
 const BLEperipheral = require("ble-peripheral");
 const Crypto = require("cipher").encryption;
-const GdtManCom = ('./gdtManCom.js');
+const GdtManCom = require('./gdtManCom.js');
 
 const logPrefix = 'appManagerClass.js | ';
 
