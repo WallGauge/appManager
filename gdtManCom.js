@@ -21,6 +21,16 @@ class gdtManCom {
         logit('Sending alert to gdtMan...');
         var asArry = JSON.stringify(objectToSend);
         logit(asArry);
+
+        var options = {
+            'optionList':
+            {
+                'ListItem1': '123',
+                'ListItem2': '456',
+            }
+        };
+
+
         this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
             if (err) {
                 logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.bluez.GattCharacteristic1'");
@@ -36,7 +46,7 @@ class gdtManCom {
                 //     };
                 // });
 
-                iface.ReadValue({"device":"sbPowerGauge"}, (err, result) => {
+                iface.ReadValue(options, (err, result) => {
                     if (err) {
                         logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
                         console.error('Error calling sendAlert ReadValue.', err);
