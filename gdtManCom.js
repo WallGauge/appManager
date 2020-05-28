@@ -45,7 +45,7 @@ class gdtManCom {
                 //         logit('Result from sendAlert = ' + result);
                 //     };
                 // });
-
+                logit('using options...');
                 iface.ReadValue(options, (err, result) => {
                     if (err) {
                         logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
