@@ -26,15 +26,27 @@ class gdtManCom {
                 logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.bluez.GattCharacteristic1'");
                 console.error('Failed to request interface ', err);
             } else {
-                iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
+                // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
+                //     if (err) {
+                //         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
+                //         console.error('Error calling sendAlert.', err);
+                //     };
+                //     if (result) {
+                //         logit('Result from sendAlert = ' + result);
+                //     };
+                // });
+
+                iface.ReadValue({"device":"sbPowerGauge"}, (err, result) => {
                     if (err) {
-                        logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-                        console.error('Error calling sendAlert.', err);
+                        logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
+                        console.error('Error calling sendAlert ReadValue.', err);
                     };
                     if (result) {
                         logit('Result from sendAlert = ' + result);
                     };
                 });
+
+
             };
         });
 
