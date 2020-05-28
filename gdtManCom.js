@@ -17,42 +17,20 @@ class gdtManCom {
      * @param {object} objectToSend 
      */
     sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
-        var objectPath = '/com/gdtMan/gaugeAlert'
+        var objectPath = '/com/gdtMan'
         logit('Sending alert to gdtMan...');
         var asArry = JSON.stringify(objectToSend);
         logit(asArry);
 
-        // var options = {
-        //     'optionList':
-        //     {
-        //         'ListItem1': '123',
-        //         'ListItem2': '456',
-        //     }
-        // };
-
-        // var options = '{"ListItem1": "123"}';
-        var options = '["ListItem1", "123"]';
-
-
-        this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
+        this._DBusClient.getInterface('com.gdtMan', objectPath, 'gdtMan.gaugeCom', (err, iface) => {
             if (err) {
-                logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.bluez.GattCharacteristic1'");
+                logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'gdtMan.gaugeCom'");
                 console.error('Failed to request interface ', err);
             } else {
-                // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
-                //     if (err) {
-                //         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-                //         console.error('Error calling sendAlert.', err);
-                //     };
-                //     if (result) {
-                //         logit('Result from sendAlert = ' + result);
-                //     };
-                // });
-                logit('using options...');
-                iface.ReadValue(options, (err, result) => {
+                iface.Alert(asArry, (err, result) => {
                     if (err) {
-                        logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
-                        console.error('Error calling sendAlert ReadValue.', err);
+                        logit('Error calling sendAlert. ObjectPath = ' + objectPath);
+                        console.error('Error calling sendAlert.', err);
                     };
                     if (result) {
                         logit('Result from sendAlert = ' + result);
@@ -60,34 +38,6 @@ class gdtManCom {
                 });
             };
         });
-
-        // this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.freedesktop.DBus.Properties', (err, iface) => {
-        //     if (err) {
-        //         logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.freedesktop.DBus.Properties'");
-        //         console.error('Failed to request interface ', err);
-        //     } else {
-        //         // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
-        //         //     if (err) {
-        //         //         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-        //         //         console.error('Error calling sendAlert.', err);
-        //         //     };
-        //         //     if (result) {
-        //         //         logit('Result from sendAlert = ' + result);
-        //         //     };
-        //         // });
-        //         logit('using options...');
-        //         iface.GetAll('org.bluez.GattCharacteristic1', (err, result) => {
-        //             if (err) {
-        //                 logit('Error calling get all properties. ObjectPath = ' + objectPath);
-        //                 console.error('Error calling sendAlert ReadValue.', err);
-        //             };
-        //             if (result) {
-        //                 logit('Result from getall properties = ' + result);
-        //                 console.dir(result, {depth:null});
-        //             };
-        //         });
-        //     };
-        // });
     };
 
 };
