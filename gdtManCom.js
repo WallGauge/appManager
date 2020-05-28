@@ -46,7 +46,7 @@ class gdtManCom {
                 //     };
                 // });
                 logit('using options...');
-                iface.ReadValue(null, (err, result) => {
+                iface.ReadValue(['cojt'], (err, result) => {
                     if (err) {
                         logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
                         console.error('Error calling sendAlert ReadValue.', err);
