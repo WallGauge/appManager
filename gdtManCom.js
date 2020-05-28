@@ -18,16 +18,15 @@ class gdtManCom {
      */
     sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
         var objectPath = '/com/gdtMan'
-        logit('Sending alert to gdtMan...');
-        var asArry = JSON.stringify(objectToSend);
-        logit(asArry);
+        var jString = JSON.stringify(objectToSend);
+        logit('Sending alert to gdtMan: ' + jString);
 
         this._DBusClient.getInterface('com.gdtMan', objectPath, 'gdtMan.gaugeCom', (err, iface) => {
             if (err) {
                 logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'gdtMan.gaugeCom'");
                 console.error('Failed to request interface ', err);
             } else {
-                iface.Alert(asArry, (err, result) => {
+                iface.Alert(jString, (err, result) => {
                     if (err) {
                         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
                         console.error('Error calling sendAlert.', err);
@@ -39,7 +38,6 @@ class gdtManCom {
             };
         });
     };
-
 };
 
 function logit(txt = '') {

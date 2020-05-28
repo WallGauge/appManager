@@ -140,19 +140,11 @@ class appManager extends EventEmitter {
     sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
         logit('Sending Alert....');
         this.gdtManCom.sendAlert(objectToSend);
-
-        // console.dir(objectToSend, { depth: null });
-        // var asArry = JSON.stringify(objectToSend);
-       
-        
-
-
-        // try {
-        //     // var asArry = JSON.stringify(objectToSend);
-        //     var result = cp.execSync("/usr/bin/dbus-send --system --dest=com.gdtMan --print-reply=literal /com/gdtMan/gaugeAlert org.bluez.GattCharacteristic1.WriteValue string:" + "'" + asArry + "'");
-        // } catch (err) {
-        //     console.error('Error when trying to sendAlert to gdtMan ', err);
-        // };
+        try {
+            this.gdtManCom.sendAlert(objectToSend);
+        } catch (err) {
+            console.error('Error when trying to sendAlert to gdtMan ', err);
+        };
     };
 
     /** This is a blank method that can be extended. 
