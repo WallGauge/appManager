@@ -30,11 +30,7 @@ class gdtManCom {
         //     }
         // };
 
-        var options = 
-            {
-                'ListItem1': '123',
-                'ListItem2': '456',
-            };
+        var options = '{"ListItem1": "123"}';
 
 
 
