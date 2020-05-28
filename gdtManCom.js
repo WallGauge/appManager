@@ -30,8 +30,8 @@ class gdtManCom {
         //     }
         // };
 
-        var options = '{"ListItem1": "123"}';
-
+        // var options = '{"ListItem1": "123"}';
+        var options = '["ListItem1", "123"]';
 
 
         this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
