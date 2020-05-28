@@ -22,13 +22,20 @@ class gdtManCom {
         var asArry = JSON.stringify(objectToSend);
         logit(asArry);
 
-        var options = {
-            'optionList':
+        // var options = {
+        //     'optionList':
+        //     {
+        //         'ListItem1': '123',
+        //         'ListItem2': '456',
+        //     }
+        // };
+
+        var options = 
             {
                 'ListItem1': '123',
                 'ListItem2': '456',
-            }
-        };
+            };
+
 
 
         this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
@@ -46,7 +53,7 @@ class gdtManCom {
                 //     };
                 // });
                 logit('using options...');
-                iface.ReadValue([{'cojt':'fia'}], (err, result) => {
+                iface.ReadValue(options, (err, result) => {
                     if (err) {
                         logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
                         console.error('Error calling sendAlert ReadValue.', err);
