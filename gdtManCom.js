@@ -31,36 +31,9 @@ class gdtManCom {
         };
 
 
-        // this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
-        //     if (err) {
-        //         logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.bluez.GattCharacteristic1'");
-        //         console.error('Failed to request interface ', err);
-        //     } else {
-        //         // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
-        //         //     if (err) {
-        //         //         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-        //         //         console.error('Error calling sendAlert.', err);
-        //         //     };
-        //         //     if (result) {
-        //         //         logit('Result from sendAlert = ' + result);
-        //         //     };
-        //         // });
-        //         logit('using options...');
-        //         iface.ReadValue(options, (err, result) => {
-        //             if (err) {
-        //                 logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
-        //                 console.error('Error calling sendAlert ReadValue.', err);
-        //             };
-        //             if (result) {
-        //                 logit('Result from sendAlert = ' + result);
-        //             };
-        //         });
-        //     };
-        // });
-
-        this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.freedesktop.DBus.Properties', (err, iface) => {
+        this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.bluez.GattCharacteristic1', (err, iface) => {
             if (err) {
-                logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.freedesktop.DBus.Properties'");
+                logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.bluez.GattCharacteristic1'");
                 console.error('Failed to request interface ', err);
             } else {
                 // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
@@ -73,18 +46,45 @@ class gdtManCom {
                 //     };
                 // });
                 logit('using options...');
-                iface.GetAll('org.bluez.GattCharacteristic1', (err, result) => {
+                iface.ReadValue(null, (err, result) => {
                     if (err) {
-                        logit('Error calling get all properties. ObjectPath = ' + objectPath);
+                        logit('Error calling sendAlert ReadValue. ObjectPath = ' + objectPath);
                         console.error('Error calling sendAlert ReadValue.', err);
                     };
                     if (result) {
-                        logit('Result from getall properties = ' + result);
-                        console.dir(result, {depth:null});
+                        logit('Result from sendAlert = ' + result);
                     };
                 });
             };
         });
+
+        // this._DBusClient.getInterface('com.gdtMan', objectPath, 'org.freedesktop.DBus.Properties', (err, iface) => {
+        //     if (err) {
+        //         logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'org.freedesktop.DBus.Properties'");
+        //         console.error('Failed to request interface ', err);
+        //     } else {
+        //         // iface.WriteValue(asArry, {"device":"sbPowerGauge"}, (err, result) => {
+        //         //     if (err) {
+        //         //         logit('Error calling sendAlert. ObjectPath = ' + objectPath);
+        //         //         console.error('Error calling sendAlert.', err);
+        //         //     };
+        //         //     if (result) {
+        //         //         logit('Result from sendAlert = ' + result);
+        //         //     };
+        //         // });
+        //         logit('using options...');
+        //         iface.GetAll('org.bluez.GattCharacteristic1', (err, result) => {
+        //             if (err) {
+        //                 logit('Error calling get all properties. ObjectPath = ' + objectPath);
+        //                 console.error('Error calling sendAlert ReadValue.', err);
+        //             };
+        //             if (result) {
+        //                 logit('Result from getall properties = ' + result);
+        //                 console.dir(result, {depth:null});
+        //             };
+        //         });
+        //     };
+        // });
     };
 
 };
