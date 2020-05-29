@@ -138,8 +138,6 @@ class appManager extends EventEmitter {
     };
 
     sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
-        logit('Sending Alert....');
-        this.gdtManCom.sendAlert(objectToSend);
         try {
             this.gdtManCom.sendAlert(objectToSend);
         } catch (err) {
