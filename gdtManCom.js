@@ -1,6 +1,7 @@
+const EventEmitter = require('events');
 const logPrefix = 'appManagerClass_gdtManCom.js | ';
 
-class gdtManCom {
+class gdtManCom extends EventEmitter {
     /**
      * This class communicates with gdtMan over dbus.  Its primary goal is to realy alerts if this gauge is in error 
      * and to let the user know their subscription has expired
@@ -8,7 +9,20 @@ class gdtManCom {
      * @param {object} DBusClient Is a dbus system object
      */
     constructor(DBusClient) {
+        super();
         this._DBusClient = DBusClient;
+        this._DBusClient.getInterface('com.gdtMan', '/com/gdtMan', 'gdtMan.gaugeCom', (err, iface) => {
+            if (err) {
+                logit("Error with interface to 'com.gdtMan' durning class construction...");
+                console.error('Failed to request interface ', err);
+            } else {
+                logit('Setting up even emitter for SubExpired');
+                iface.on('SubExpired', (status) =>{
+                    logit('SubExpired event firing, value = ' + status)
+                    this.emit('SubExpired', status);
+                });
+            };
+        });
     };
 
     /**
@@ -44,7 +58,7 @@ class gdtManCom {
      * @param {string} propertyName 
      * @returns promise (value)
      */
-    getProperty(propertyName = 'SubscriptionExpired'){
+    getProperty(propertyName = 'SubscriptionExpired') {
         var objectPath = '/com/gdtMan'
         return new Promise((reslove, reject) => {
             this._DBusClient.getInterface('com.gdtMan', objectPath, 'gdtMan.gaugeCom', (err, iface) => {
@@ -54,9 +68,9 @@ class gdtManCom {
                     reject(err);
                 } else {
                     iface.getProperty(propertyName, (err, value) => {
-                        if(err){
+                        if (err) {
                             logit('Error reading property ' + propertyName);
-                            console.error('Error getProperty',err);
+                            console.error('Error getProperty', err);
                             reject(err);
                         } else {
                             reslove(value);
