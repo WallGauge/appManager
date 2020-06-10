@@ -11,9 +11,7 @@ class gdtManCom extends EventEmitter {
     constructor(DBusClient) {
         super();
         this._DBusClient = DBusClient;
-        this._listenForSubExpiredEvent();
         this._iFace = {}
-
         this._DBusClient.getInterface('com.gdtMan', '/com/gdtMan', 'com.gdtMan.gaugeCom', (err, iface) => {
             if (err) {
                 logit("Error with interface to 'com.gdtMan' durning class construction...");
