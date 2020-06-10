@@ -5,6 +5,9 @@ class gdtManCom extends EventEmitter {
     /**
      * This class communicates with gdtMan over dbus.  Its primary goal is to realy alerts if this gauge is in error 
      * and to let the user know their subscription has expired
+     * emits 
+     *  emit('iFaceReady')
+     *  emit('SubExpired', status)
      * 
      * @param {object} DBusClient Is a dbus system object
      */
@@ -23,6 +26,7 @@ class gdtManCom extends EventEmitter {
                     logit('SubExpired event firing, value = ' + status);
                     this.emit('SubExpired', status);
                 });
+                this.emit('iFaceReady');
             };
         });
     };

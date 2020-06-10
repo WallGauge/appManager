@@ -34,6 +34,7 @@ class appManager extends EventEmitter {
      */
     constructor(defaultGaugeConfigPath = __dirname + '/gaugeConfig.json', modifiedConfigMasterPath = __dirname + '/modifiedConfig.json', encryptMyDataOnDisk = false, dataEncryptionKey = null) {
         super();
+        this.subscriptionExpired = false;
         this.encryptMyData = encryptMyDataOnDisk;
         this.encryptionAvailable = false;
         if (this.encryptMyData && dataEncryptionKey != null) {
@@ -74,16 +75,23 @@ class appManager extends EventEmitter {
         this.gTx = new irTransmitter(this.config.gaugeIrAddress, this.config.calibrationTable);
         this.bPrl = new BLEperipheral(this.config.dBusName, this.config.uuid, this._bleConfig, false);
         this.gdtManCom = new GdtManCom(this.bPrl.dBusClient);
-        this.gdtManCom.getProperty('SubscriptionExpired')
-            .then((val) => {
-                logit('This gdts subscription expired value = ' + val);
-            })
-            .catch((err) => {
-                logit('Error with this.gdtManCom.getProperty call: ' + err)
-            });
+        this.gdtManCom.on('iFaceReady', () => {
+            logit('dBus communications with gdtMan is ready.  Reading subscription expired value...');
+            this.gdtManCom.getProperty('SubscriptionExpired')
+                .then((val) => {
+                    logit('This gdts subscription expired value = ' + val);
+                    this.subscriptionExpired = val;
+                })
+                .catch((err) => {
+                    logit('Error with this.gdtManCom.getProperty call: ' + err)
+                });
+        });
+        this.gdtManCom.on('SubExpired', (value) => {
+            logit('A subscription expired event has been received from gdtMan: SubExpired = ' + value);
+            this.subscriptionExpired = value;
+        });
 
         self = this;
-
         this.bPrl.on('ConnectionChange', (connected) => {
             var bleUserName = '';
             if (this.bPrl.client.name == '') {
