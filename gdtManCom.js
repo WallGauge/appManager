@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const logPrefix = 'appManagerClass_gdtManCom.js | ';
+const logPrefix = 'appManagerClass.js | gdtManCom.js | ';
 
 class gdtManCom extends EventEmitter {
     /**
