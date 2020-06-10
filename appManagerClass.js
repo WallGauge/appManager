@@ -74,13 +74,13 @@ class appManager extends EventEmitter {
         this.gTx = new irTransmitter(this.config.gaugeIrAddress, this.config.calibrationTable);
         this.bPrl = new BLEperipheral(this.config.dBusName, this.config.uuid, this._bleConfig, false);
         this.gdtManCom = new GdtManCom(this.bPrl.dBusClient);
-        // this.gdtManCom.getProperty('SubscriptionExpired')
-        //     .then((val) => {
-        //         logit('This gdts subscription expired value = ' + val);
-        //     })
-        //     .catch((err) => {
-        //         logit('Error with this.gdtManCom.getProperty call: ' + err)
-        //     });
+        this.gdtManCom.getProperty('SubscriptionExpired')
+            .then((val) => {
+                logit('This gdts subscription expired value = ' + val);
+            })
+            .catch((err) => {
+                logit('Error with this.gdtManCom.getProperty call: ' + err)
+            });
 
         self = this;
 
