@@ -1,6 +1,6 @@
 {
   "name": "app-manager",
-  "version": "2.9.12",
+  "version": "2.9.13",
   "description": "Manages a gauge's config, BLE and irdTxServer communications.",
   "main": "appManagerClass.js",
   "scripts": {

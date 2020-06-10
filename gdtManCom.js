@@ -3,13 +3,15 @@ const logPrefix = 'appManagerClass.js | gdtManCom.js | ';
 
 class gdtManCom extends EventEmitter {
     /**
-     * This class communicates with gdtMan over dbus.  Its primary goal is to realy alerts if this gauge is in error 
+     * This class communicates with gdtMan over dbus.  Its primary goal is to send alerts if this gauge is in error 
      * and to let the user know their subscription has expired
-     * emits 
+     * 
+     * emits: 
      *  emit('iFaceReady')
      *  emit('SubExpired', status)
      * 
      * @param {object} DBusClient Is a dbus system object
+     * @returns gdtManCom
      */
     constructor(DBusClient) {
         super();
@@ -23,7 +25,6 @@ class gdtManCom extends EventEmitter {
                 logit('Setting up event emitter for SubExpired on new interface');
                 this._iFace = iface;
                 this._iFace.on('SubExpired', (status) => {
-                    logit('SubExpired event firing, value = ' + status);
                     this.emit('SubExpired', status);
                 });
                 this.emit('iFaceReady');
@@ -53,23 +54,6 @@ class gdtManCom extends EventEmitter {
                 logit('Result from sendAlert = ' + result);
             };
         });
-
-        // this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
-        //     if (err) {
-        //         logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'com.gdtMan.gaugeCom'");
-        //         console.error('Failed to request interface ', err);
-        //     } else {
-        //         iface.Alert(jString, (err, result) => {
-        //             if (err) {
-        //                 logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-        //                 console.error('Error calling sendAlert.', err);
-        //             };
-        //             if (result) {
-        //                 logit('Result from sendAlert = ' + result);
-        //             };
-        //         });
-        //     };
-        // });
     };
 
     /**
@@ -93,26 +77,6 @@ class gdtManCom extends EventEmitter {
                 };
             });
         });
-
-        // return new Promise((reslove, reject) => {
-        //     this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
-        //         if (err) {
-        //             logit('Error getting interface to com.gdtMan to getProperty');
-        //             console.error('Error getting interface', err);
-        //             reject(err);
-        //         } else {
-        //             iface.getProperty(propertyName, (err, value) => {
-        //                 if (err) {
-        //                     logit('Error reading property ' + propertyName);
-        //                     console.error('Error getProperty', err);
-        //                     reject(err);
-        //                 } else {
-        //                     reslove(value);
-        //                 };
-        //             });
-        //         };
-        //     });
-        // });
     };
 };
 
@@ -120,10 +84,10 @@ function isEmpty(obj) {
     for (var key in obj) {
         if (obj.hasOwnProperty(key)) {
             return false;
-        }
-    }
+        };
+    };
     return true;
-}
+};
 
 function logit(txt = '') {
     console.debug(logPrefix + txt);
