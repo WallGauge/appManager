@@ -28,7 +28,7 @@ class gdtManCom extends EventEmitter {
 
     /**
      * Sends an alert to gdtMan over dBus using the gdtMan/gaugeAlert characteristic
-     * gdbus call --system --dest com.gdtMan --object-path /com/gdtMan --method org.freedesktop.DBus.Properties.GetAll gdtMan.gaugeCom
+     * gdbus call --system --dest com.gdtMan --object-path /com/gdtMan --method org.freedesktop.DBus.Properties.GetAll com.gdtMan.gaugeCom
      * @param {object} objectToSend 
      */
     sendAlert(objectToSend = { 'this.config.descripition': "1" }) {
@@ -62,7 +62,7 @@ class gdtManCom extends EventEmitter {
     getProperty(propertyName = 'SubscriptionExpired') {
         var objectPath = '/com/gdtMan'
         return new Promise((reslove, reject) => {
-            this._DBusClient.getInterface('com.gdtMan', objectPath, 'gdtMan.gaugeCom', (err, iface) => {
+            this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
                 if (err) {
                     logit('Error getting interface to com.gdtMan to getProperty');
                     console.error('Error getting interface', err);
