@@ -126,6 +126,11 @@ class appManager extends EventEmitter {
             this.setGaugeStatus('Warining: Gauge value transmission not allowed during adminstration.')
             return false;
         };
+        if(this.subscriptionExpired == true){
+            this.setGaugeStatus('Alert: This GDTs Subscription has expired.');
+            
+        }
+
         var logValue = value.toString() + ', ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
         if (descripition != '') {
             logValue = value.toString() + descripition.toString();
