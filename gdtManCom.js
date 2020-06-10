@@ -16,7 +16,7 @@ class gdtManCom extends EventEmitter {
                 logit("Error with interface to 'com.gdtMan' durning class construction...");
                 console.error('Failed to request interface ', err);
             } else {
-                logit('Setting up even emitter for SubExpired');
+                logit('Setting up event emitter for SubExpired');
                 iface.on('SubExpired', (status) =>{
                     logit('SubExpired event firing, value = ' + status)
                     this.emit('SubExpired', status);
