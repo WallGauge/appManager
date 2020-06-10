@@ -11,16 +11,19 @@ class gdtManCom extends EventEmitter {
     constructor(DBusClient) {
         super();
         this._DBusClient = DBusClient;
+        this._listenForSubExpiredEvent();
+        this._iFace = {}
+
         this._DBusClient.getInterface('com.gdtMan', '/com/gdtMan', 'com.gdtMan.gaugeCom', (err, iface) => {
             if (err) {
                 logit("Error with interface to 'com.gdtMan' durning class construction...");
                 console.error('Failed to request interface ', err);
             } else {
-                logit('Setting up event emitter for SubExpired');
-                iface.on('SubExpired', (status) => {
-                    // logit('SubExpired event firing, value = ' + status);
-                    console.log('*  *  *  *  *  *  SubExpired event firing, value = ' + status);
-                    //this.emit('SubExpired', status);
+                logit('Setting up event emitter for SubExpired on new interface');
+                this._iFace = iface;
+                this._iFace.on('SubExpired', (status) => {
+                    logit('SubExpired event firing, value = ' + status);
+                    this.emit('SubExpired', status);
                 });
             };
         });
@@ -35,23 +38,36 @@ class gdtManCom extends EventEmitter {
         var objectPath = '/com/gdtMan'
         var jString = JSON.stringify(objectToSend);
         logit('Sending alert to gdtMan: ' + jString);
-
-        this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
+        if (isEmpty(this._iFace)) {
+            logit('Error this dbus interface object not setup. Skipping this command.');
+            return;
+        };
+        this._iFace.Alert(jString, (err, result) => {
             if (err) {
-                logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'com.gdtMan.gaugeCom'");
-                console.error('Failed to request interface ', err);
-            } else {
-                iface.Alert(jString, (err, result) => {
-                    if (err) {
-                        logit('Error calling sendAlert. ObjectPath = ' + objectPath);
-                        console.error('Error calling sendAlert.', err);
-                    };
-                    if (result) {
-                        logit('Result from sendAlert = ' + result);
-                    };
-                });
+                logit('Error calling sendAlert. ObjectPath = ' + objectPath);
+                console.error('Error calling sendAlert.', err);
+            };
+            if (result) {
+                logit('Result from sendAlert = ' + result);
             };
         });
+
+        // this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
+        //     if (err) {
+        //         logit("Error with interface to 'com.gdtMan', " + objectPath + ", 'com.gdtMan.gaugeCom'");
+        //         console.error('Failed to request interface ', err);
+        //     } else {
+        //         iface.Alert(jString, (err, result) => {
+        //             if (err) {
+        //                 logit('Error calling sendAlert. ObjectPath = ' + objectPath);
+        //                 console.error('Error calling sendAlert.', err);
+        //             };
+        //             if (result) {
+        //                 logit('Result from sendAlert = ' + result);
+        //             };
+        //         });
+        //     };
+        // });
     };
 
     /**
@@ -60,28 +76,52 @@ class gdtManCom extends EventEmitter {
      * @returns promise (value)
      */
     getProperty(propertyName = 'SubscriptionExpired') {
-        var objectPath = '/com/gdtMan'
-        return new Promise((reslove, reject) => {
-            this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
+        return new Promise((resolve, reject) => {
+            if (isEmpty(this._iFace)) {
+                logit('Error this dbus interface object not setup. Rejecting getProperty command.');
+                reject('Error this dbus interface object not setup.');
+            };
+            this._iFace.getProperty(propertyName, (err, value) => {
                 if (err) {
-                    logit('Error getting interface to com.gdtMan to getProperty');
-                    console.error('Error getting interface', err);
+                    logit('Error reading property ' + propertyName);
+                    console.error('Error getProperty', err);
                     reject(err);
                 } else {
-                    iface.getProperty(propertyName, (err, value) => {
-                        if (err) {
-                            logit('Error reading property ' + propertyName);
-                            console.error('Error getProperty', err);
-                            reject(err);
-                        } else {
-                            reslove(value);
-                        };
-                    });
+                    reslove(value);
                 };
             });
         });
+
+        // return new Promise((reslove, reject) => {
+        //     this._DBusClient.getInterface('com.gdtMan', objectPath, 'com.gdtMan.gaugeCom', (err, iface) => {
+        //         if (err) {
+        //             logit('Error getting interface to com.gdtMan to getProperty');
+        //             console.error('Error getting interface', err);
+        //             reject(err);
+        //         } else {
+        //             iface.getProperty(propertyName, (err, value) => {
+        //                 if (err) {
+        //                     logit('Error reading property ' + propertyName);
+        //                     console.error('Error getProperty', err);
+        //                     reject(err);
+        //                 } else {
+        //                     reslove(value);
+        //                 };
+        //             });
+        //         };
+        //     });
+        // });
     };
 };
+
+function isEmpty(obj) {
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            return false;
+        }
+    }
+    return true;
+}
 
 function logit(txt = '') {
     console.debug(logPrefix + txt);
