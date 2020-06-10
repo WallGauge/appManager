@@ -89,7 +89,7 @@ class gdtManCom extends EventEmitter {
                     console.error('Error getProperty', err);
                     reject(err);
                 } else {
-                    reslove(value);
+                    resolve(value);
                 };
             });
         });
