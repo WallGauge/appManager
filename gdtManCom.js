@@ -11,15 +11,16 @@ class gdtManCom extends EventEmitter {
     constructor(DBusClient) {
         super();
         this._DBusClient = DBusClient;
-        this._DBusClient.getInterface('com.gdtMan', '/com/gdtMan', 'gdtMan.gaugeCom', (err, iface) => {
+        this._DBusClient.getInterface('com.gdtMan', '/com/gdtMan', 'com.gdtMan.gaugeCom', (err, iface) => {
             if (err) {
                 logit("Error with interface to 'com.gdtMan' durning class construction...");
                 console.error('Failed to request interface ', err);
             } else {
                 logit('Setting up event emitter for SubExpired');
-                iface.on('SubExpired', (status) =>{
-                    logit('SubExpired event firing, value = ' + status)
-                    this.emit('SubExpired', status);
+                iface.on('SubExpired', (status) => {
+                    // logit('SubExpired event firing, value = ' + status);
+                    console.log('*  *  *  *  *  *  SubExpired event firing, value = ' + status);
+                    //this.emit('SubExpired', status);
                 });
             };
         });
