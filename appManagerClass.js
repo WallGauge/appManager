@@ -152,9 +152,12 @@ class appManager extends EventEmitter {
      * @param {string} statusStr status string to set. Suggest including a time stamp in the string for exampel 'Okay, 8:14:25AM, 2/10/2019'
      */
     setGaugeStatus(statusStr) {
-        this.status = statusStr;
-        this.gaugeStatus.setValue(statusStr);
-
+        if(this.subscriptionExpired == true) {
+            this.status = 'Alert: This GDTs Subscription has expired.';
+        } else {
+            this.status = statusStr;
+        };
+        this.gaugeStatus.setValue(this.status);
         if (this.gaugeStatus.iface.Notifying) {
             this.gaugeStatus.notify();
         };
