@@ -121,15 +121,17 @@ class appManager extends EventEmitter {
      */
     setGaugeValue(value, descripition = '') {
         if (this._okToSend) {
-            this.gTx.sendValue(value);
+            if (this.subscriptionExpired == true) {
+                this.setGaugeStatus('Alert: This GDTs Subscription has expired.');
+                this.gTx.setSubscriptionExpired()
+            } else {
+                this.gTx.sendValue(value);
+            }
         } else {
             this.setGaugeStatus('Warining: Gauge value transmission not allowed during adminstration.')
             return false;
         };
-        if(this.subscriptionExpired == true){
-            this.setGaugeStatus('Alert: This GDTs Subscription has expired.');
-            
-        }
+
 
         var logValue = value.toString() + ', ' + (new Date()).toLocaleTimeString() + ', ' + (new Date()).toLocaleDateString();
         if (descripition != '') {
