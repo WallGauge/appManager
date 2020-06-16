@@ -74,21 +74,25 @@ class appManager extends EventEmitter {
         this._okToSend = true;
         this.gTx = new irTransmitter(this.config.gaugeIrAddress, this.config.calibrationTable);
         this.bPrl = new BLEperipheral(this.config.dBusName, this.config.uuid, this._bleConfig, false);
-        this.gdtManCom = new GdtManCom(this.bPrl.dBusClient);
-        this.gdtManCom.on('iFaceReady', () => {
-            logit('dBus communications with gdtMan is ready.  Reading subscription expired value...');
-            this.gdtManCom.getProperty('SubscriptionExpired')
-                .then((val) => {
-                    logit('This gdts subscription expired value = ' + val);
-                    this.subscriptionExpired = val;
-                })
-                .catch((err) => {
-                    logit('Error with this.gdtManCom.getProperty call: ' + err)
-                });
-        });
-        this.gdtManCom.on('SubExpired', (value) => {
-            logit('A subscription expired event has been received from gdtMan: SubExpired = ' + value);
-            this.subscriptionExpired = value;
+
+        this.bPrl.gattService.on('regComplete', () => {
+            logit('BLE init complete. Setting up dBus communications with gdtMan....')
+            this.gdtManCom = new GdtManCom(this.bPrl.dBusClient);
+            this.gdtManCom.on('iFaceReady', () => {
+                logit('dBus communications with gdtMan is ready.  Reading subscription expired value...');
+                this.gdtManCom.getProperty('SubscriptionExpired')
+                    .then((val) => {
+                        logit('This gdts subscription expired value = ' + val);
+                        this.subscriptionExpired = val;
+                    })
+                    .catch((err) => {
+                        logit('Error with this.gdtManCom.getProperty call: ' + err)
+                    });
+            });
+            this.gdtManCom.on('SubExpired', (value) => {
+                logit('A subscription expired event has been received from gdtMan: SubExpired = ' + value);
+                this.subscriptionExpired = value;
+            });
         });
 
         self = this;
@@ -152,7 +156,7 @@ class appManager extends EventEmitter {
      * @param {string} statusStr status string to set. Suggest including a time stamp in the string for exampel 'Okay, 8:14:25AM, 2/10/2019'
      */
     setGaugeStatus(statusStr) {
-        if(this.subscriptionExpired == true) {
+        if (this.subscriptionExpired == true) {
             this.status = 'Alert: This GDTs Subscription has expired.';
         } else {
             this.status = statusStr;
